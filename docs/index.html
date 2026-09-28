@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>숨은여행지도 | 클라우드컴퓨팅실습 팀 프로젝트</title>
+<meta name="description" content="관광빅데이터로 사람들이 덜 가는 곳을 먼저 찾아주는 역발상 여행 서비스, 숨은여행지도 팀 소개 페이지">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EDF0EA;
+  --panel:#FAFBF8;
+  --ink:#15291F;
+  --muted:#53655A;
+  --line:#D3DCD4;
+  --forest:#2F5E4A;
+  --lantern:#EBAE45;
+  --lantern-ink:#8A5608;
+  --lantern-tint:#F6E7C8;
+  --l0:#DCE6DE; --l1:#BFD4C5; --l2:#93B8A0; --l3:#679679; --l4:#3F7458; --l5:#214D39;
+  --serif:"Hahmlet","Nanum Myeongjo","AppleMyungjo","Batang",serif;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1914; --panel:#16231C; --ink:#E3ECE5; --muted:#9FB2A6; --line:#2B3B32;
+    --forest:#8CC3A2; --lantern:#EDB450; --lantern-ink:#F2C878; --lantern-tint:#33291A;
+    --l0:#223128; --l1:#2B4637; --l2:#386049; --l3:#4E7F63; --l4:#6B9F82; --l5:#93C2A5;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1914; --panel:#16231C; --ink:#E3ECE5; --muted:#9FB2A6; --line:#2B3B32;
+  --forest:#8CC3A2; --lantern:#EDB450; --lantern-ink:#F2C878; --lantern-tint:#33291A;
+  --l0:#223128; --l1:#2B4637; --l2:#386049; --l3:#4E7F63; --l4:#6B9F82; --l5:#93C2A5;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.72;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--forest);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--serif);font-weight:700;letter-spacing:-0.015em;margin:0}
+p{margin:0}
+.wrap{max-width:1120px;margin-inline:auto;padding-inline:clamp(20px,5vw,48px)}
+.ph{background:var(--lantern-tint);color:var(--lantern-ink);padding:0 .3em;border-radius:4px}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-block:22px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-mark{width:36px;height:36px;flex:none}
+.brand-name{display:block;font-family:var(--serif);font-weight:700;font-size:1.15rem;line-height:1.25}
+.brand-sub{display:block;font-size:.8rem;color:var(--muted);line-height:1.35}
+.nav{display:none;gap:2px}
+.nav a{font-size:.92rem;text-decoration:none;color:var(--muted);padding:10px 12px;border-radius:8px}
+.nav a:hover{color:var(--ink);background:var(--panel)}
+@media (min-width:820px){.nav{display:flex}}
+
+/* hero */
+.hero{display:grid;gap:32px;grid-template-areas:"text" "map" "pick";padding-block:clamp(28px,6vw,64px) clamp(64px,9vw,112px)}
+.hero-text{grid-area:text}
+.hero-map{grid-area:map}
+.pick{grid-area:pick}
+@media (min-width:920px){
+  .hero{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-areas:"text map" "pick map";column-gap:64px;row-gap:36px;align-items:start}
+}
+h1{font-size:clamp(2.1rem,4.6vw,3.45rem);line-height:1.24;margin-bottom:22px}
+.sub{font-size:clamp(1.05rem,1.6vw,1.2rem);font-weight:600;line-height:1.55;max-width:30em;margin-bottom:12px}
+.lead{font-size:clamp(1.02rem,1.5vw,1.14rem);color:var(--muted);max-width:32em}
+
+.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px 28px}
+.pick-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pick-name{font-family:var(--serif);font-weight:700;font-size:1.6rem;line-height:1.3}
+.badge{font-size:.8rem;font-weight:600;color:var(--lantern-ink);background:var(--lantern-tint);padding:4px 10px;border-radius:999px}
+.ghost{display:flex;align-items:flex-end;gap:14px;margin:16px 0 20px}
+.ghost-num{font-family:var(--serif);font-weight:700;font-size:4rem;line-height:.9;font-variant-numeric:tabular-nums}
+.ghost-label{font-size:.85rem;color:var(--muted);line-height:1.4;padding-bottom:4px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 18px}
+.facts div{padding-top:10px;border-top:1px solid var(--line)}
+.facts dt{font-size:.8rem;color:var(--muted)}
+.facts dd{margin:0;font-weight:600;font-size:1.05rem}
+.spots-label{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.spots{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0 0 16px}
+.spots li{font-size:.88rem;padding:4px 12px;border-radius:8px;background:var(--bg)}
+.note{font-size:.78rem;color:var(--muted)}
+
+.hero-map{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:clamp(18px,3vw,28px)}
+#map{display:block;width:100%;max-width:400px;height:auto;margin-inline:auto}
+.hex{stroke:var(--panel);stroke-width:2.5;transition:fill .2s ease}
+.lv0{fill:var(--l0)} .lv1{fill:var(--l1)} .lv2{fill:var(--l2)} .lv3{fill:var(--l3)} .lv4{fill:var(--l4)} .lv5{fill:var(--l5)}
+.cand{cursor:pointer}
+.cand .dot{fill:var(--lantern)}
+.cand:hover .hex{fill:var(--lantern-tint)}
+.sel-hex{fill:var(--lantern);stroke:var(--ink);stroke-width:2}
+.sel-dot{fill:var(--ink)}
+.ring{fill:none;stroke:var(--lantern);stroke-width:2.5;opacity:.8}
+.map-label{font-family:var(--sans);font-size:13px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:5px;stroke-linejoin:round}
+.overlay{pointer-events:none;opacity:0;animation:fadeIn .4s ease-out 850ms forwards}
+.tile{opacity:0;animation:tileIn .45s ease-out forwards;animation-delay:var(--d,0ms);transform-box:fill-box;transform-origin:center}
+@keyframes tileIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes fadeIn{to{opacity:1}}
+.legend{display:flex;align-items:center;justify-content:center;gap:10px;font-size:.8rem;color:var(--muted);margin-top:14px}
+.swatches{display:flex;gap:3px}
+.swatches span{width:18px;height:10px;border-radius:3px}
+.hint{font-size:.88rem;color:var(--muted);margin:22px 0 10px;text-align:center}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.chip{font:inherit;font-size:.9rem;font-weight:500;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;min-height:44px;padding:0 16px;cursor:pointer}
+.chip:hover{border-color:var(--forest)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.map-cap{font-size:.78rem;color:var(--muted);text-align:center;margin-top:18px}
+
+/* sections */
+.section{padding-block:clamp(64px,9vw,112px)}
+.section h2{font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1.3;max-width:22em}
+.section-lead{color:var(--muted);max-width:40em;margin-top:16px}
+.band{background:var(--panel);border-block:1px solid var(--line)}
+
+.idea{display:grid;gap:40px}
+@media (min-width:900px){.idea{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:72px;align-items:center}}
+.idea-text p{margin-top:16px;max-width:34em}
+.quote{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,3.8vw,2.9rem);line-height:1.38;letter-spacing:-0.02em}
+.quote svg{display:block;width:30px;height:30px;margin-bottom:18px}
+
+.steps{list-style:none;padding:0;margin:44px 0 0;display:grid;gap:36px 32px;grid-template-columns:1fr}
+@media (min-width:640px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.steps li{border-top:2px solid var(--ink);padding-top:18px}
+.step-n{display:block;font-family:var(--serif);font-weight:700;font-size:2.4rem;line-height:1;color:var(--forest);margin-bottom:14px}
+.steps h3{font-size:1.2rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.steps p{color:var(--muted);font-size:.97rem}
+.opt{font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:0;color:var(--lantern-ink);background:var(--lantern-tint);padding:2px 8px;border-radius:999px}
+
+.flow{list-style:none;padding:0;margin:44px 0 0;display:grid;gap:30px;grid-template-columns:1fr}
+.flow li{position:relative;background:var(--bg);border:1.5px solid var(--forest);border-radius:14px;padding:16px 18px}
+.flow li.ext{border-style:dashed;border-color:var(--muted)}
+.flow strong{display:block;font-family:var(--serif);font-size:1.1rem}
+.flow span{font-size:.88rem;color:var(--muted)}
+.flow li:not(:last-child)::after{content:"";position:absolute;left:50%;bottom:-21px;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateX(-50%) rotate(45deg)}
+@media (min-width:880px){
+  .flow{grid-template-columns:repeat(5,minmax(0,1fr));gap:32px}
+  .flow li:not(:last-child)::after{left:auto;right:-22px;bottom:auto;top:50%;transform:translateY(-50%) rotate(-45deg)}
+}
+.flow-key{font-size:.8rem;color:var(--muted);margin-top:14px}
+
+.data-grid{display:grid;gap:40px;margin-top:56px}
+@media (min-width:900px){.data-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:56px;align-items:start}}
+.sources{margin:0}
+.sources div{padding:18px 0;border-top:1px solid var(--line)}
+.sources div:last-child{border-bottom:1px solid var(--line)}
+.sources dt{font-weight:600;font-size:1.05rem}
+.sources dt small{font-weight:400;color:var(--muted);font-size:.82rem;margin-left:8px}
+.sources dd{margin:4px 0 0;color:var(--muted);font-size:.96rem}
+.formula{background:var(--lantern-tint);border-radius:20px;padding:28px}
+.formula h3{font-size:1.15rem;margin-bottom:14px}
+.eq{font-family:var(--serif);font-weight:600;font-size:clamp(1.3rem,2.4vw,1.6rem);line-height:1.35;margin-bottom:14px}
+.formula p{font-size:.96rem}
+.fine{font-size:.84rem;color:var(--muted);margin-top:12px}
+.api{margin-top:64px}
+.api h3{font-size:1.25rem;margin-bottom:6px}
+.api-sub{font-size:.88rem;color:var(--muted);margin-bottom:18px}
+.table-scroll{overflow-x:auto}
+.api table{width:100%;min-width:560px;border-collapse:collapse;font-size:.95rem}
+.api th,.api td{text-align:left;vertical-align:top;padding:13px 20px 13px 0;border-top:1px solid var(--line)}
+.api thead th{font-size:.8rem;font-weight:600;color:var(--muted);border-top:none;padding-bottom:8px}
+.api tbody tr:last-child td{border-bottom:1px solid var(--line)}
+.api td:first-child{width:1%;white-space:nowrap}
+.api code{font-family:var(--mono);font-size:.84rem;background:var(--bg);border:1px solid var(--line);padding:3px 8px;border-radius:6px;white-space:nowrap}
+.api-note{font-size:.88rem;color:var(--muted);margin-top:16px}
+
+.team{list-style:none;padding:0;margin:44px 0 0;display:grid;gap:32px 20px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:640px){.team{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:960px){.team{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.team li{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.member-mark{width:64px;height:72px;display:grid;place-items:center;background:var(--forest);color:var(--panel);font-family:var(--serif);font-weight:700;font-size:1.4rem;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.name{font-family:var(--serif);font-weight:700;font-size:1.3rem}
+
+.timeline{list-style:none;padding:0;margin:48px 0 0;display:grid;gap:40px 28px;grid-template-columns:1fr}
+@media (min-width:640px){.timeline{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){.timeline{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.timeline li{position:relative;border-top:2px solid var(--line);padding-top:26px}
+.timeline li::before{content:"";position:absolute;top:-11px;left:0;width:18px;height:20px;background:var(--forest);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.timeline li.goal{border-top-color:var(--lantern)}
+.timeline li.goal::before{background:var(--lantern)}
+.week{font-size:.86rem;font-weight:600;color:var(--forest)}
+.timeline h3{font-size:1.2rem;margin:4px 0 8px}
+.what{color:var(--muted);font-size:.96rem}
+.dod{margin-top:56px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:clamp(22px,3vw,32px)}
+.dod h3{font-size:1.2rem;margin-bottom:18px}
+.dod ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+@media (min-width:880px){.dod ul{grid-template-columns:1fr 1fr;column-gap:44px}}
+.dod li{position:relative;padding-left:30px}
+.dod li::before{content:"";position:absolute;left:0;top:.42em;width:14px;height:16px;background:var(--forest);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.scope{margin-top:24px;padding:20px 24px;border-radius:14px;border:1px dashed var(--muted);color:var(--muted);max-width:52em;font-size:.95rem}
+
+.foot{padding-block:40px 56px;font-size:.84rem;color:var(--muted);display:grid;gap:6px}
+.foot-inner{border-top:1px solid var(--line);padding-top:28px;display:grid;gap:6px}
+
+.shots{display:grid;gap:36px 28px;margin-top:44px}
+@media (min-width:880px){.shots{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.shots .shot:first-child{grid-column:1 / -1}}
+.shot{margin:0}
+.shot-btn{display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);cursor:zoom-in}
+.shot-btn img{display:block;width:100%;height:auto}
+.shot figcaption{margin-top:12px;font-size:.95rem;max-width:44em}
+.shot figcaption strong{font-family:var(--serif);font-weight:700;margin-right:8px}
+.shot figcaption span{color:var(--muted)}
+.shots-note{font-size:.84rem;color:var(--muted);margin-top:24px}
+.lightbox{padding:0;border:0;background:transparent;max-width:min(1400px,96vw);max-height:94vh;overflow:visible}
+.lightbox::backdrop{background:rgba(8,16,12,.84)}
+.lightbox img{display:block;max-width:100%;max-height:90vh;width:auto;height:auto;border-radius:12px}
+.lightbox-close{position:absolute;top:10px;right:10px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:999px;background:var(--panel);color:var(--ink);cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.lightbox-close svg{width:18px;height:18px}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .tile,.overlay{animation:none;opacity:1}
+  .hex{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <a class="brand" href="#top">
+    <svg class="brand-mark" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+      <polygon points="18,2.5 31.5,10.25 31.5,25.75 18,33.5 4.5,25.75 4.5,10.25" style="fill:var(--forest)"/>
+      <circle cx="23" cy="14" r="4.2" style="fill:var(--lantern)"/>
+    </svg>
+    <span>
+      <span class="brand-name">숨은여행지도</span>
+      <span class="brand-sub">KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조</span>
+    </span>
+  </a>
+  <nav class="nav" aria-label="페이지 구역">
+    <a href="#idea">아이디어</a>
+    <a href="#how">사용 흐름</a>
+    <a href="#screens">화면</a>
+    <a href="#data">데이터</a>
+    <a href="#team">팀</a>
+    <a href="#plan">일정</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero wrap" id="top">
+  <div class="hero-text">
+    <h1>사람들이 덜 가는 곳에서<br>새로운 여행을 발견합니다</h1>
+    <p class="sub">관광빅데이터로 ‘사람들이 덜 가는 곳’을 먼저 찾아주는 역발상 여행 서비스</p>
+    <p class="lead">숨은여행지도는 전국 시군구의 방문량을 지도 색으로 보여줍니다. 연하게 칠해진 곳, 즉 방문이 적은 지역을 누르면 그 지역의 관광지와 사진이 나타납니다.</p>
+  </div>
+
+  <figure class="hero-map">
+    <svg id="map" aria-hidden="true" focusable="false"></svg>
+    <div class="legend">
+      <span>방문 적음</span>
+      <span class="swatches" aria-hidden="true">
+        <span style="background:var(--l0)"></span><span style="background:var(--l1)"></span><span style="background:var(--l2)"></span><span style="background:var(--l3)"></span><span style="background:var(--l4)"></span><span style="background:var(--l5)"></span>
+      </span>
+      <span>방문 많음</span>
+    </div>
+    <p class="hint">노란 점이 찍힌 곳이 숨은 지역 후보입니다. 하나를 골라 보세요.</p>
+    <div class="chips" role="group" aria-label="숨은 지역 후보">
+      <button type="button" class="chip" data-key="yeongyang" aria-pressed="true">영양군</button>
+      <button type="button" class="chip" data-key="yanggu" aria-pressed="false">양구군</button>
+      <button type="button" class="chip" data-key="jangsu" aria-pressed="false">장수군</button>
+      <button type="button" class="chip" data-key="uiryeong" aria-pressed="false">의령군</button>
+      <button type="button" class="chip" data-key="goesan" aria-pressed="false">괴산군</button>
+    </div>
+    <figcaption class="map-cap">설명용 도식입니다. 실제 서비스는 SGIS 시군구 경계와 관광빅데이터 방문량으로 지도를 그립니다.</figcaption>
+  </figure>
+
+  <aside class="pick" aria-live="polite" aria-label="선택한 지역">
+    <div class="pick-top">
+      <p class="pick-name" id="pickName">경북 영양군</p>
+      <span class="badge">숨은 지역 후보</span>
+    </div>
+    <div class="ghost">
+      <span class="ghost-num" id="pickGhost">96</span>
+      <span class="ghost-label">Ghost Index<br>100점 만점</span>
+    </div>
+    <dl class="facts">
+      <div><dt>방문량 순위</dt><dd id="pickRank">전국 하위 4%</dd></div>
+      <div><dt>사진 있는 관광지</dt><dd id="pickSpots">7곳</dd></div>
+    </dl>
+    <p class="spots-label">볼거리</p>
+    <ul class="spots" id="pickTags"><li>두들마을</li><li>수하계곡</li><li>자작나무숲</li></ul>
+    <p class="note">예시 데이터입니다. 실제 값은 개발 후 DB에서 불러옵니다.</p>
+  </aside>
+</section>
+
+<section class="section wrap" id="idea">
+  <div class="idea">
+    <div class="idea-text">
+      <h2>추천의 방향을 뒤집었습니다</h2>
+      <p>대부분의 여행 서비스는 많이 찾는 곳부터 보여줍니다. 그래서 인기 지역은 더 붐비고, 볼거리가 있어도 덜 알려진 지역은 계속 뒤로 밀립니다.</p>
+      <p>숨은여행지도는 거꾸로 묻습니다. 사람이 적게 가는 곳 가운데 실제로 가볼 만한 곳은 어디일까? 붐비는 여행지에 지친 사람, 남들이 잘 모르는 곳을 찾는 사람을 위한 서비스입니다.</p>
+    </div>
+    <blockquote class="quote">
+      <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+        <polygon points="18,2.5 31.5,10.25 31.5,25.75 18,33.5 4.5,25.75 4.5,10.25" style="fill:none;stroke:var(--forest);stroke-width:2"/>
+        <circle cx="18" cy="18" r="5" style="fill:var(--lantern)"/>
+      </svg>
+      <p>사람은 적게 가지만,<br>볼 것은 있습니다.</p>
+    </blockquote>
+  </div>
+</section>
+
+<section class="section wrap" id="how" style="padding-top:0">
+  <h2>이렇게 사용합니다</h2>
+  <ol class="steps">
+    <li>
+      <span class="step-n" aria-hidden="true">1</span>
+      <h3>전국 지도 보기</h3>
+      <p>시군구별 방문량을 색의 농도로 칠합니다. 많이 가는 곳은 진하게, 적게 가는 곳은 연하게 보입니다.</p>
+    </li>
+    <li>
+      <span class="step-n" aria-hidden="true">2</span>
+      <h3>숨은 지역 고르기</h3>
+      <p>연한 지역을 누르면 30일 평균 방문량과 전국에서 하위 몇 %인지 알려줍니다.</p>
+    </li>
+    <li>
+      <span class="step-n" aria-hidden="true">3</span>
+      <h3>사진으로 확인하기</h3>
+      <p>같은 화면에 그 지역 관광지 사진이 3~6장 나옵니다. 사람은 적어도 볼 것은 있다는 걸 바로 확인할 수 있습니다.</p>
+    </li>
+    <li>
+      <span class="step-n" aria-hidden="true">4</span>
+      <h3>검색으로 좁히기 <span class="opt">여유가 있으면</span></h3>
+      <p>계곡, 사찰, 박물관, 바다 같은 키워드로 숨은 지역 안의 관광지를 검색합니다. 검색은 7주차 수업에서 다루는 OpenSearch로 붙입니다.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="section wrap" id="screens" style="padding-top:0">
+  <h2>완성하면 이런 화면입니다</h2>
+  <p class="section-lead">팀에서 먼저 그려 본 목업입니다. 이미지를 누르면 크게 볼 수 있습니다.</p>
+  <div class="shots">
+    <figure class="shot">
+      <button type="button" class="shot-btn" aria-label="메인 지도 목업 크게 보기">
+        <img src="images/mockup-01-map.webp" width="1400" height="940" loading="lazy" alt="메인 지도 목업. 왼쪽에 시군구별 방문량을 초록색 농도로 칠한 지도, 오른쪽에 경북 영양군의 Ghost Index 96, 최근 30일 일평균 방문량, 전국 순위, 관광지 사진 카드가 있습니다.">
+      </button>
+      <figcaption><strong>메인 지도</strong><span>방문량을 색으로 칠한 전국 지도에서 지역을 누르면, 오른쪽에 방문량 요약과 관광지 사진이 나옵니다.</span></figcaption>
+    </figure>
+    <figure class="shot">
+      <button type="button" class="shot-btn" aria-label="지역 상세 목업 크게 보기">
+        <img src="images/mockup-02-detail.webp" width="1400" height="940" loading="lazy" alt="지역 상세 목업. 숨은 여행지 순위 목록, 경북 영양군 소개와 최근 12주 방문량 추세, 이 지역에서 발견한 관광지 네 곳이 있습니다.">
+      </button>
+      <figcaption><strong>지역 상세</strong><span>숨은 여행지 순위, 최근 12주 방문량 추세, 그 지역에서 찾은 관광지를 한 화면에 보여줍니다.</span></figcaption>
+    </figure>
+    <figure class="shot">
+      <button type="button" class="shot-btn" aria-label="테마 탐색 목업 크게 보기">
+        <img src="images/mockup-03-theme.webp" width="1400" height="940" loading="lazy" alt="테마 탐색 목업. '숲'으로 검색한 결과로, 방문량이 낮은 지역 여덟 곳을 Ghost Index와 함께 사진 카드로 보여줍니다.">
+      </button>
+      <figcaption><strong>테마 탐색</strong><span>방문이 적은 지역 안에서 숲, 계곡, 한옥처럼 원하는 테마로 찾습니다.</span></figcaption>
+    </figure>
+  </div>
+  <p class="shots-note">목업의 수치와 지역 정보는 예시 데이터입니다.</p>
+</section>
+
+<section class="band" id="data">
+  <div class="section wrap">
+    <h2>공공데이터 세 가지를 우리 API로 묶습니다</h2>
+    <p class="section-lead">외부 데이터를 화면에서 바로 부르지 않습니다. 한 번 모아 DB에 저장하고, 우리가 만든 FastAPI로 서비스에 필요한 모양만 꺼내 씁니다.</p>
+
+    <ol class="flow">
+      <li class="ext"><strong>외부 API</strong><span>한국관광공사, SGIS</span></li>
+      <li><strong>수집기</strong><span>Python</span></li>
+      <li><strong>DB</strong><span>PostgreSQL, Supabase</span></li>
+      <li><strong>우리 API</strong><span>FastAPI</span></li>
+      <li><strong>화면</strong><span>React, Leaflet</span></li>
+    </ol>
+    <p class="flow-key">점선은 외부 기관이 제공하는 부분, 실선은 팀이 직접 만드는 부분입니다.</p>
+
+    <div class="data-grid">
+      <dl class="sources">
+        <div>
+          <dt>관광빅데이터 <small>한국관광공사</small></dt>
+          <dd>시군구별 하루 방문자 수. 현지인은 빼고 외지인과 외국인만 더해 지도 색을 정합니다.</dd>
+        </div>
+        <div>
+          <dt>국문 관광정보 TourAPI <small>한국관광공사</small></dt>
+          <dd>관광지 이름, 주소, 좌표, 대표 사진. 지역을 눌렀을 때 사진 카드로 보여줍니다.</dd>
+        </div>
+        <div>
+          <dt>행정구역 경계 <small>SGIS</small></dt>
+          <dd>시군구의 실제 모양. 한 번 받아 GeoJSON 파일로 두고 지도를 그립니다.</dd>
+        </div>
+      </dl>
+      <div class="formula">
+        <h3>숨은 정도는 이렇게 계산합니다</h3>
+        <p class="eq">Ghost Index = 100 − 방문량 백분위</p>
+        <p>전국 시군구를 30일 평균 방문량 순서로 세우고, 적게 방문할수록 높은 점수를 줍니다. 방문량 하위 20%이면서 사진 있는 관광지가 3곳 이상인 지역을 숨은 여행지 후보로 표시합니다.</p>
+        <p class="fine">팀이 탐색용으로 정의한 지표이며, 관광지의 가치를 평가하는 점수가 아닙니다.</p>
+      </div>
+    </div>
+
+    <div class="api">
+      <h3>우리 API가 하는 일</h3>
+      <p class="api-sub">FastAPI로 만드는 핵심 엔드포인트 다섯 개입니다.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">엔드포인트</th><th scope="col">하는 일</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /regions</code></td><td>전국 시군구의 평균 방문량, 백분위, Ghost Index를 돌려줍니다. 지도를 칠하는 데 씁니다.</td></tr>
+            <tr><td><code>GET /regions/{code}</code></td><td>선택한 지역의 방문량 요약을 돌려줍니다.</td></tr>
+            <tr><td><code>GET /regions/{code}/attractions</code></td><td>선택한 지역에서 사진이 있는 관광지 목록을 돌려줍니다.</td></tr>
+            <tr><td><code>GET /hidden</code></td><td>방문이 적고 볼거리가 있는 숨은 지역 목록을 돌려줍니다.</td></tr>
+            <tr><td><code>GET /health</code></td><td>서버와 DB가 제대로 연결됐는지 확인합니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="api-note">여유가 있으면 관광지명, 주소, 카테고리 검색을 OpenSearch로 추가합니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section wrap" id="team">
+  <h2>함께 만드는 1조</h2>
+  <ul class="team">
+    <li><span class="member-mark" aria-hidden="true">이</span><p class="name">이강훈</p></li>
+    <li><span class="member-mark" aria-hidden="true">강</span><p class="name">강재구</p></li>
+    <li><span class="member-mark" aria-hidden="true">구</span><p class="name">구대로</p></li>
+    <li><span class="member-mark" aria-hidden="true">박</span><p class="name">박주원</p></li>
+    <li><span class="member-mark" aria-hidden="true">이</span><p class="name">이재원</p></li>
+  </ul>
+</section>
+
+<section class="section wrap" id="plan" style="padding-top:0">
+  <h2>발표까지 4주</h2>
+  <ol class="timeline">
+    <li>
+      <p class="week">5주차</p>
+      <h3>데이터 연결 확인</h3>
+      <p class="what">API 키 발급, 종로구 한 곳을 수집부터 화면까지 연결, 지역 연결표 초안</p>
+    </li>
+    <li>
+      <p class="week">6주차</p>
+      <h3>백엔드 완성</h3>
+      <p class="what">전국 방문량 수집, 30일 집계와 Ghost Index 계산, 관광지 사진 저장, 핵심 API 완성</p>
+    </li>
+    <li>
+      <p class="week">7주차</p>
+      <h3>화면과 배포</h3>
+      <p class="what">코로플레스 지도, 지역 상세와 사진 카드, Vercel과 Render, Supabase 배포</p>
+    </li>
+    <li class="goal">
+      <p class="week">8주차</p>
+      <h3>최종 발표</h3>
+      <p class="what">기능 동결, 1분 라이브 데모 반복, 실패에 대비한 캡처와 샘플 응답 준비</p>
+    </li>
+  </ol>
+  <div class="dod">
+    <h3>8주차 발표에서 보여드릴 것</h3>
+    <ul>
+      <li>배포 주소를 열면 전국 지도가 보이고, 지역별 색 농도가 실제 DB 방문량과 연결되어 있습니다.</li>
+      <li>연한 지역을 누르면 방문량 하위 몇 %인지와 사진 있는 관광지 3곳 이상이 함께 나옵니다.</li>
+      <li>FastAPI 문서 화면(/docs)에서 핵심 API가 정상적으로 응답합니다.</li>
+      <li>팀원 누구나 외부 API에서 DB, 우리 API, 화면으로 이어지는 흐름을 설명할 수 있습니다.</li>
+    </ul>
+  </div>
+  <p class="scope">이번에는 AI 추천, 날씨, 맛집, 숙박, 여행 코스, 개인화를 넣지 않습니다. 기능 수보다 한 흐름이 끝까지 동작하는 것을 먼저 완성합니다.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div class="foot-inner">
+    <p>데이터 출처: 한국관광공사 관광빅데이터 정보서비스, 한국관광공사 국문 관광정보 서비스(TourAPI), SGIS 행정구역경계 API</p>
+    <p>이 페이지의 지도와 수치는 설명을 위한 예시입니다.</p>
+    <p>KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 팀 프로젝트</p>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="목업 크게 보기">
+  <img alt="">
+  <button type="button" class="lightbox-close" aria-label="닫기">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19" style="fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round"/></svg>
+  </button>
+</dialog>
+
+<script>
+(function(){
+  var dlg = document.getElementById("lightbox");
+  if(!dlg || typeof dlg.showModal !== "function") return;
+  var big = dlg.querySelector("img");
+  Array.prototype.forEach.call(document.querySelectorAll(".shot-btn"), function(b){
+    b.addEventListener("click", function(){
+      var s = b.querySelector("img");
+      big.src = s.currentSrc || s.src;
+      big.alt = s.alt;
+      dlg.showModal();
+    });
+  });
+  dlg.querySelector(".lightbox-close").addEventListener("click", function(){ dlg.close(); });
+  dlg.addEventListener("click", function(e){ if(e.target === dlg) dlg.close(); });
+})();
+
+(function(){
+  var data = {
+    yeongyang:{name:"경북 영양군",short:"영양군",ghost:96,spots:7,tags:["두들마을","수하계곡","자작나무숲"]},
+    yanggu:{name:"강원 양구군",short:"양구군",ghost:94,spots:11,tags:["펀치볼","생태숲","산길"]},
+    jangsu:{name:"전북 장수군",short:"장수군",ghost:92,spots:9,tags:["계곡","숲길","작은마을"]},
+    uiryeong:{name:"경남 의령군",short:"의령군",ghost:91,spots:8,tags:["고택","숲","전통마을"]},
+    goesan:{name:"충북 괴산군",short:"괴산군",ghost:89,spots:13,tags:["산막이옛길","숲","호수"]}
+  };
+  // [row, startCol, levels]  숫자 = 방문량 단계(0 적음 ~ 5 많음), 문자열 = 숨은 지역 후보
+  var rows = [
+    [0,2,[2,1,"yanggu",3]],
+    [1,1,[4,5,3,1,4]],
+    [2,1,[5,5,2,1,4]],
+    [3,1,[3,2,2,1,3]],
+    [4,1,[3,2,3,"goesan",2,"yeongyang"]],
+    [5,1,[2,3,2,1,1,3]],
+    [6,0,[2,3,1,"jangsu",2,4,4]],
+    [7,0,[2,4,1,2,"uiryeong",3,4]],
+    [8,0,[3,2,1,4,2,3,5]],
+    [9,0,[1,2]],
+    [11,1,[5,4]]
+  ];
+  var svg = document.getElementById("map");
+  if(!svg) return;
+  var NS = "http://www.w3.org/2000/svg", R = 22, W = Math.sqrt(3)*R, H = 1.5*R, PAD = 14;
+  function pts(cx,cy,r){
+    var a = [];
+    for(var i=0;i<6;i++){
+      var ang = Math.PI/180*(60*i-30);
+      a.push((cx+r*Math.cos(ang)).toFixed(1)+","+(cy+r*Math.sin(ang)).toFixed(1));
+    }
+    return a.join(" ");
+  }
+  function el(tag,attrs){
+    var n = document.createElementNS(NS,tag);
+    for(var k in attrs){ n.setAttribute(k,attrs[k]); }
+    return n;
+  }
+  var tiles = el("g",{}), overlay = el("g",{"class":"overlay"});
+  var maxX = 0, maxY = 0, cands = {};
+  rows.forEach(function(row){
+    var r = row[0], s = row[1];
+    row[2].forEach(function(v,i){
+      var c = s+i;
+      var cx = PAD + W/2 + (c + (r%2 ? 0.5 : 0))*W;
+      var cy = PAD + R + r*H;
+      maxX = Math.max(maxX, cx + W/2);
+      maxY = Math.max(maxY, cy + R);
+      var isC = typeof v === "string";
+      var g = el("g",{"class": isC ? "tile cand" : "tile"});
+      g.style.setProperty("--d", (r*60 + i*25) + "ms");
+      g.appendChild(el("polygon",{"class":"hex lv"+(isC?0:v), points:pts(cx,cy,R)}));
+      if(isC){
+        g.appendChild(el("circle",{"class":"dot", cx:cx.toFixed(1), cy:cy.toFixed(1), r:4}));
+        cands[v] = {cx:cx, cy:cy, row:r};
+        g.addEventListener("click", function(){ select(v); });
+      }
+      tiles.appendChild(g);
+    });
+  });
+  var ring = el("polygon",{"class":"ring"});
+  var selHex = el("polygon",{"class":"sel-hex"});
+  var selDot = el("circle",{"class":"sel-dot", r:4});
+  var label = el("text",{"class":"map-label","text-anchor":"middle"});
+  overlay.appendChild(ring); overlay.appendChild(selHex); overlay.appendChild(selDot); overlay.appendChild(label);
+  svg.appendChild(tiles); svg.appendChild(overlay);
+  svg.setAttribute("viewBox","0 0 "+(maxX+PAD).toFixed(0)+" "+(maxY+PAD).toFixed(0));
+
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  function byId(id){ return document.getElementById(id); }
+  function select(key){
+    var d = data[key], c = cands[key];
+    if(!d || !c) return;
+    ring.setAttribute("points", pts(c.cx,c.cy,R*1.5));
+    selHex.setAttribute("points", pts(c.cx,c.cy,R-1));
+    selDot.setAttribute("cx", c.cx.toFixed(1));
+    selDot.setAttribute("cy", c.cy.toFixed(1));
+    label.textContent = d.short;
+    label.setAttribute("x", c.cx.toFixed(1));
+    label.setAttribute("y", (c.row === 0 ? c.cy + R + 24 : c.cy - R - 12).toFixed(1));
+    chips.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-key") === key)); });
+    byId("pickName").textContent = d.name;
+    byId("pickGhost").textContent = d.ghost;
+    byId("pickRank").textContent = "전국 하위 " + (100 - d.ghost) + "%";
+    byId("pickSpots").textContent = d.spots + "곳";
+    var ul = byId("pickTags");
+    ul.textContent = "";
+    d.tags.forEach(function(t){ var li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+  }
+  chips.forEach(function(b){ b.addEventListener("click", function(){ select(b.getAttribute("data-key")); }); });
+  select("yeongyang");
+})();
+</script>
+</body>
+</html>
