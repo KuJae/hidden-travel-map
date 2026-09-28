@@ -3,6 +3,9 @@
 관광빅데이터로 ‘사람들이 덜 가는 곳’을 먼저 찾아주는 역발상 여행 서비스
 KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 (이강훈, 강재구, 구대로, 박주원, 이재원)
 
+- 팀 페이지: https://kujae.github.io/hidden-travel-map/
+- 저장소: https://github.com/KuJae/hidden-travel-map
+
 ## 폴더 구조
 
 ```
@@ -24,7 +27,7 @@ docs/            팀 소개 페이지 (GitHub Pages로 배포)
 
 ## 배포 (GitHub Pages)
 
-Settings > Pages > Source: Deploy from a branch > Branch: `main`, 폴더: `/docs` > Save
+Settings > Pages > Source: Deploy from a branch > Branch: `main`, 폴더: `/docs` > Save (설정 완료)
 
 ## 약속
 

@@ -142,6 +142,7 @@ hidden-travel-map/
 - 지도와 카드 수치는 기획안 목업의 예시 데이터 (JS의 data 객체: 영양군 96/7곳, 양구군 94/11곳, 장수군 92/9곳, 의령군 91/8곳, 괴산군 89/13곳). 페이지에 "예시 데이터"로 표기돼 있다.
 - 팀 결정 사항: 역할 분담과 결과물 설명은 페이지에서 뺐다. 팀원은 이름만 표시한다.
 - claude.ai에서 만든 미리보기 버전이 따로 있지만 Git 수정 사항은 반영되지 않는다. 과제 제출은 GitHub Pages 주소로 한다.
+- 저장소: https://github.com/KuJae/hidden-travel-map (Public, 소유자 KuJae) / 팀 페이지: https://kujae.github.io/hidden-travel-map/
 
 ## 8. 작업 규칙
 - API 키나 비밀 값은 절대 커밋하지 않는다. 커밋 전 git status로 확인한다.
