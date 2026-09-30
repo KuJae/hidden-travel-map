@@ -46,7 +46,8 @@ def sample_tour():
     print(f"  전체 {body.get('totalCount')}건 중 첫 페이지 {len(items)}건, 사진 있음 {len(with_image)}건 → {path.relative_to(ROOT)}")
     if items:
         print(f"  필드: {list(items[0].keys())}")
-        print(f"  옛 sigunguCode 가 빈 콘텐츠: {sum(1 for it in items if not it.get('sigunguCode'))}건")
+        print(f"  옛 sigungucode 가 빈 콘텐츠: {sum(1 for it in items if not str(it.get('sigungucode') or '').strip())}건")
+        print(f"  사진 저작권 cpyrhtDivCd: {dict(Counter(it.get('cpyrhtDivCd') for it in with_image))}")
     for it in with_image[:3]:
         print(f"  - {it.get('title')} | {it.get('addr1')} | ({it.get('mapy')}, {it.get('mapx')}) | "
               f"lDong={it.get('lDongRegnCd')}/{it.get('lDongSignguCd')}")

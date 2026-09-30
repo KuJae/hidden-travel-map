@@ -11,8 +11,8 @@ from common import TOUR_URL, connect, fetch_all
 CONTENT_TYPES = {"12": "관광지", "14": "문화시설", "28": "레포츠"}
 
 UPSERT = """
-INSERT INTO attractions (content_id, region_id, title, category, address, lat, lon, image_url, updated_at)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, now())
+INSERT INTO attractions (content_id, region_id, title, category, address, lat, lon, image_url, image_license, updated_at)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, now())
 ON CONFLICT (content_id) DO UPDATE SET
     region_id = EXCLUDED.region_id,
     title = EXCLUDED.title,
@@ -21,6 +21,7 @@ ON CONFLICT (content_id) DO UPDATE SET
     lat = EXCLUDED.lat,
     lon = EXCLUDED.lon,
     image_url = EXCLUDED.image_url,
+    image_license = EXCLUDED.image_license,
     updated_at = now()
 """
 
@@ -54,7 +55,10 @@ def main():
                         continue
                     batch.append((
                         str(it["contentid"]), region_id, it["title"], type_nm, it.get("addr1") or None,
-                        to_float(it.get("mapy")), to_float(it.get("mapx")), it["firstimage"],
+                        to_float(it.get("mapy")), to_float(it.get("mapx")),
+                        # 일부가 http:// 로 온다. https 화면(Vercel)에서 막히지 않게 바꿔 저장
+                        it["firstimage"].replace("http://", "https://", 1),
+                        it.get("cpyrhtDivCd") or None,
                     ))
                 with conn.cursor() as cur:
                     cur.executemany(UPSERT, batch)

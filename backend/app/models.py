@@ -29,3 +29,7 @@ class Attraction(BaseModel):
     lat: float | None
     lon: float | None
     image_url: str = Field(description="TourAPI 대표 이미지 URL")
+    image_license: str | None = Field(
+        description="공공누리 유형. Type1 출처표시, Type3 출처표시+변경금지 (화면에 '출처: 한국관광공사' 표시)",
+        examples=["Type3"],
+    )

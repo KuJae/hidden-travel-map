@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS attractions (
     lat         DOUBLE PRECISION,                                          -- mapy
     lon         DOUBLE PRECISION,                                          -- mapx
     image_url   TEXT    NOT NULL,                                          -- firstimage
+    image_license TEXT,                                                    -- cpyrhtDivCd: Type1 출처표시, Type3 출처표시+변경금지
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS attractions_region_idx ON attractions (region_id);

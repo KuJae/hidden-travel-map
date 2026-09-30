@@ -39,7 +39,7 @@ def list_attractions(
 ):
     region_id = _region_id(conn, code)
     return conn.execute("""
-        SELECT content_id, title, category, address, lat, lon, image_url
+        SELECT content_id, title, category, address, lat, lon, image_url, image_license
         FROM attractions
         WHERE region_id = %s
         ORDER BY (category = '관광지') DESC, title
