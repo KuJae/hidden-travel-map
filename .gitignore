@@ -9,6 +9,9 @@ __pycache__/
 .venv/
 venv/
 
+# 수집기 원본 응답 (sample_calls.py 가 저장, 용량이 커서 올리지 않음)
+collector/data/raw/
+
 # Node
 node_modules/
 dist/
