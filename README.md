@@ -3,6 +3,7 @@
 관광빅데이터로 ‘사람들이 덜 가는 곳’을 먼저 찾아주는 역발상 여행 서비스
 KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 (이강훈, 강재구, 구대로, 박주원, 이재원)
 
+- 서비스 (지도·데이터 분석): https://hidden-travel-map.vercel.app
 - 팀 페이지: https://kujae.github.io/hidden-travel-map/
 - 저장소: https://github.com/KuJae/hidden-travel-map
 - API (Swagger UI): https://hidden-travel-map-api.onrender.com/docs  — 무료 플랜이라 한동안 안 쓰면 잠들어 첫 요청이 1분쯤 걸림
@@ -18,12 +19,14 @@ collector/         외부 API 수집기 (Python)
   regions.py         관광빅데이터·TourAPI·SGIS 시군구 코드 연결 → region_master
   visitors.py        관광빅데이터 방문자 수 → visitor_daily, visitor_summary
   attractions.py     TourAPI 관광지·사진 → attractions
+  build_geojson.py   SGIS 경계 → 지도용 frontend/data/sigungu.geojson
 backend/           FastAPI (Render로 배포)
+frontend/          서비스 화면, 빌드 없는 HTML+JS (Vercel로 배포)
+  index.html         지도 (Leaflet)
+  analysis.html      데이터 분석 페이지
 render.yaml        Render 배포 설정
 .env.example       필요한 키 목록 (복사해서 .env로)
 ```
-
-화면(`frontend/`, React·Leaflet)은 7주차에 추가합니다.
 
 ## 개발 시작하기
 
@@ -44,6 +47,8 @@ cp .env.example .env               # 그다음 .env 에 키를 채운다
 4. `python collector/visitors.py` — 최신 공개일 기준 30일 방문자 수 저장, 시 단위 순위·Ghost Index 계산
 5. `python collector/attractions.py` — 전국 사진 있는 관광지 저장 (일반구 관광지는 상위 시로 모음)
 6. `cd backend && uvicorn app.main:app --reload` — http://127.0.0.1:8000/docs 에서 API 확인
+7. (경계가 바뀔 때만) `python collector/build_geojson.py` — 지도용 경계 파일 다시 만들기
+8. `cd frontend && python3 -m http.server 8080` — http://127.0.0.1:8080 에서 화면 확인 (주소 뒤에 `?api=http://127.0.0.1:8000` 을 붙이면 로컬 API 사용)
 
 시군구는 **시 단위**로 집계합니다. 관광빅데이터에는 수원시와 수원시 장안구가 함께 있어서, 일반구는 상위 시로 모읍니다.
 
@@ -61,6 +66,7 @@ cp .env.example .env               # 그다음 .env 에 키를 채운다
 
 - 팀 페이지 (GitHub Pages): Settings > Pages > Branch `main`, 폴더 `/docs` (설정 완료)
 - API (Render): New > Blueprint > 이 저장소 선택 → `render.yaml` 설정이 채워짐 → `DATABASE_URL`에 Supabase **Session pooler** 주소 입력
+- 화면 (Vercel): 프로젝트 `hidden-travel-map`, Root Directory `frontend`, 빌드 없음. `.vercelignore` 로 frontend 폴더만 올라간다
 
 ## 약속
 

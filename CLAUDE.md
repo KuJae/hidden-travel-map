@@ -179,6 +179,10 @@ hidden-travel-map/
 - 팀 결정 사항: 역할 분담과 결과물 설명은 페이지에서 뺐다. 팀원은 이름만 표시한다.
 - claude.ai에서 만든 미리보기 버전이 따로 있지만 Git 수정 사항은 반영되지 않는다. 과제 제출은 GitHub Pages 주소로 한다.
 - 저장소: https://github.com/KuJae/hidden-travel-map (Public, 소유자 KuJae) / 팀 페이지: https://kujae.github.io/hidden-travel-map/
+- 서비스 화면: https://hidden-travel-map.vercel.app (index.html 지도, analysis.html 데이터 분석). Vercel 프로젝트 hidden-travel-map (KuJae 계정),
+  Root Directory frontend, 빌드 없음. .vercelignore 로 frontend 만 올린다. 주소 뒤 #지역코드 로 그 지역을 연 채 시작(데모용).
+  2026-09-30 기준 Vercel GitHub 앱에 이 저장소 권한이 없어 git 자동 배포 미연결 → CLI(`npx vercel@latest deploy --prod`)로 배포함.
+- 분석 API: /stats/overview, /stats/sido. 분석 결과 핵심: 사진 있는 관광지 수와 방문량의 상관(로그) 0.06 → "볼 것은 있다"의 근거.
 - API: https://hidden-travel-map-api.onrender.com (Swagger /docs). Render 무료·싱가포르·rootDir backend·main push 시 자동 배포. 환경변수 DATABASE_URL 은 Render 대시보드에만 있다.
 - 진행 상태(2026-09-30): 종로구 1곳 End-to-End 완료 — 관광빅데이터 30일·TourAPI 관광지 297곳이 Supabase 에 있고, 배포된 API 가 응답한다. 다음은 6주차 전국 확대(region_master, 시 단위).
 
