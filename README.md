@@ -12,8 +12,10 @@ KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 (이강훈, 강재구
 ```
 docs/              팀 소개 페이지 (GitHub Pages로 배포)
 db/schema.sql      DB 테이블 4개 (Supabase SQL Editor에서 실행)
+db/region_master.csv  전국 시군구 코드 연결표 (regions.py 가 만듦, 검토용)
 collector/         외부 API 수집기 (Python)
   sample_calls.py    API 3종 샘플 호출, 응답 모양 확인
+  regions.py         관광빅데이터·TourAPI·SGIS 시군구 코드 연결 → region_master
   visitors.py        관광빅데이터 방문자 수 → visitor_daily, visitor_summary
   attractions.py     TourAPI 관광지·사진 → attractions
 backend/           FastAPI (Render로 배포)
@@ -34,13 +36,16 @@ pip install -r collector/requirements.txt -r backend/requirements.txt
 cp .env.example .env               # 그다음 .env 에 키를 채운다
 ```
 
-순서대로 실행합니다. 지금은 **서울 종로구 1곳**만 끝까지 연결하는 단계입니다.
+순서대로 실행합니다. 모두 다시 돌려도 중복 저장되지 않습니다.
 
 1. `python collector/sample_calls.py` — 키가 제대로 동작하는지, 응답 필드가 예상과 같은지 확인
-2. Supabase > SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run — 테이블 4개와 종로구 1행 생성
-3. `python collector/visitors.py` — 최신 공개일 기준 30일 방문자 수 저장 (다시 돌려도 중복 없음)
-4. `python collector/attractions.py` — 종로구의 사진 있는 관광지 저장
-5. `cd backend && uvicorn app.main:app --reload` — http://127.0.0.1:8000/docs 에서 API 확인
+2. Supabase > SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run — 테이블 4개 생성
+3. `python collector/regions.py` — 전국 시군구 코드 연결표(region_master) 채우기, 결과는 `db/region_master.csv`
+4. `python collector/visitors.py` — 최신 공개일 기준 30일 방문자 수 저장, 시 단위 순위·Ghost Index 계산
+5. `python collector/attractions.py` — 전국 사진 있는 관광지 저장 (일반구 관광지는 상위 시로 모음)
+6. `cd backend && uvicorn app.main:app --reload` — http://127.0.0.1:8000/docs 에서 API 확인
+
+시군구는 **시 단위**로 집계합니다. 관광빅데이터에는 수원시와 수원시 장안구가 함께 있어서, 일반구는 상위 시로 모읍니다.
 
 공공데이터포털 개발계정은 API마다 **하루 1,000건**까지 호출할 수 있습니다.
 

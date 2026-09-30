@@ -155,13 +155,22 @@ hidden-travel-map/
   .env.example     필요한 키 목록 (DATA_LAB_KEY, TOUR_API_KEY, SGIS_SERVICE_ID, SGIS_SECRET_KEY, DATABASE_URL)
   render.yaml      Render Blueprint (rootDir: backend)
   db/schema.sql    테이블 4개 + 종로구 시드. 여러 번 실행해도 안전
-  collector/       common.py(호출·페이지네이션·DB), sample_calls.py, visitors.py, attractions.py
+  db/region_master.csv  전국 시군구 코드 연결표 (regions.py 출력, 검토·문서용)
+  collector/       common.py(호출·페이지네이션·재시도·DB), sample_calls.py, regions.py, visitors.py, attractions.py
   backend/app/     FastAPI (main.py, db.py, models.py, routers/regions.py)
   docs/            팀 페이지 (GitHub Pages: main 브랜치 /docs)
     index.html
     images/        mockup-01-map.webp, mockup-02-detail.webp, mockup-03-theme.webp (기획안 목업 3장)
 ```
 - 수집기는 region_master 에 등록된 지역만 저장한다. 전국 확대 = region_master 매핑을 채우는 일.
+- region_master (collector/regions.py): 관광빅데이터 269개 전부. 일반구 39개는 parent_region_id 로 상위 시를 가리키고,
+  순위(visitor_summary)·API 는 시 단위 230개(parent 없음)만 쓴다. 일반구 관광지는 상위 시로 모아 저장한다.
+  관광빅데이터 signguCode = TourAPI lDongRegnCd + lDongSignguCd (세종만 lDongRegnCd 가 36110). SGIS 는 (시도, 이름) 매칭으로 249개 연결.
+  시 단위 중 SGIS 경계가 없는 곳은 인천 제물포구·영종구·서해구·검단구 4곳 (2026 개편, 7주차 지도 때 처리).
+- API: GET /health, /regions(전국 시 단위), /regions/{code}, /regions/{code}/attractions, /hidden?max_percentile=20&min_attractions=3
+- [전국 수집 결과, 2026-08-02~08-31] visitor_daily 24,208행, 시 단위 230곳 순위. 방문 최하위 5곳은 영양군·울릉군·장수군·양구군·의령군
+  (기획안 목업 예시와 일치). 사진 있는 관광지 17,658곳, 230곳 모두 3곳 이상. 숨은 지역 후보는 하위 20% 기준 46곳, 30% 기준 69곳.
+- [실호출 확인] TourAPI arrange=Q(대표 이미지 있는 것만)가 사진 없는 콘텐츠를 완전히 거르지 않는다(서울 관광지 775건 중 50건 사진 없음) → 코드에서 firstimage 로 한 번 더 거른다.
 - 화면(frontend/, React·Leaflet)은 7주차에 추가한다.
 - docs/index.html은 빌드 도구 없는 단일 HTML (CSS·JS 인라인). 폰트는 Google Fonts의 Hahmlet(제목), IBM Plex Sans KR(본문)
 - 디자인 토큰: 배경 #EDF0EA, 패널 #FAFBF8, 글자 #15291F, 보조 #53655A, 숲색 #2F5E4A, 강조(등불) #EBAE45, 지도 단계 --l0~--l5. 다크 모드 지원(prefers-color-scheme + data-theme)
