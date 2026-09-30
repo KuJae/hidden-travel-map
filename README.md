@@ -67,6 +67,7 @@ cp .env.example .env               # 그다음 .env 에 키를 채운다
 - 팀 페이지 (GitHub Pages): Settings > Pages > Branch `main`, 폴더 `/docs` (설정 완료)
 - API (Render): New > Blueprint > 이 저장소 선택 → `render.yaml` 설정이 채워짐 → `DATABASE_URL`에 Supabase **Session pooler** 주소 입력
 - 화면 (Vercel): 프로젝트 `hidden-travel-map`, Root Directory `frontend`, 빌드 없음. `.vercelignore` 로 frontend 폴더만 올라간다
+- Render(API)와 Vercel(화면) 모두 GitHub `main` 에 연결돼 있어, push 하면 1~2분 뒤 자동으로 다시 배포된다
 
 ## 약속
 
