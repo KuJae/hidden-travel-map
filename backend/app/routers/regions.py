@@ -3,16 +3,20 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from app.db import get_conn
 from app.models import Attraction, RegionSummary
+from app.rules import HIDDEN_MAX_PERCENTILE, HIDDEN_MIN_ATTRACTIONS
 
 router = APIRouter(tags=["regions"])
 
 CODE = Path(description="관광빅데이터 시군구 코드 (종로구 11110). 시 단위 코드만 받는다", examples=["11110"])
 
-# 시 단위 지역(일반구 제외)의 방문량 요약 + 사진 있는 관광지 수
-SUMMARY_SQL = """
+# 시 단위 지역(일반구 제외)의 방문량 요약 + 사진 있는 관광지 수 + 숨은 지역 후보 여부
+# (기준값은 코드 상수라 문자열에 바로 넣는다. 사용자 입력은 여기에 들어오지 않는다)
+SUMMARY_SQL = f"""
     SELECT r.datalab_code AS code, r.sido_nm, r.signgu_nm, r.sgis_code,
            s.window_start, s.window_end, s.avg_daily_visitors, s.percentile, s.ghost_index,
-           COALESCE(a.cnt, 0) AS attraction_count
+           COALESCE(a.cnt, 0) AS attraction_count,
+           COALESCE(s.percentile <= {HIDDEN_MAX_PERCENTILE} AND COALESCE(a.cnt, 0) >= {HIDDEN_MIN_ATTRACTIONS}, false)
+               AS is_candidate
     FROM region_master r
     LEFT JOIN visitor_summary s USING (region_id)
     LEFT JOIN (SELECT region_id, count(*) AS cnt FROM attractions GROUP BY region_id) a USING (region_id)
@@ -60,8 +64,8 @@ def list_attractions(
 
 @router.get("/hidden", response_model=list[RegionSummary], summary="숨은 지역 후보 (방문 적고 볼거리 있는 곳)")
 def list_hidden(
-    max_percentile: float = Query(20, ge=0, le=100, description="방문량 하위 몇 % 까지 (기획안 본문 20, 목업 30)"),
-    min_attractions: int = Query(3, ge=0, description="사진 있는 관광지 최소 개수"),
+    max_percentile: float = Query(HIDDEN_MAX_PERCENTILE, ge=0, le=100, description="방문량 하위 몇 % 까지 (팀 기준 30)"),
+    min_attractions: int = Query(HIDDEN_MIN_ATTRACTIONS, ge=0, description="사진 있는 관광지 최소 개수 (팀 기준 3)"),
     limit: int = Query(20, ge=1, le=230, description="최대 개수"),
     conn: psycopg.Connection = Depends(get_conn),
 ):

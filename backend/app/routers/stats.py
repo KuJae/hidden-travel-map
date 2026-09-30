@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.db import get_conn
 from app.models import SidoStats, StatsOverview
+from app.rules import HIDDEN_MAX_PERCENTILE as HP, HIDDEN_MIN_ATTRACTIONS as HA
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -56,15 +57,15 @@ def overview(conn: psycopg.Connection = Depends(get_conn)):
     } for m in mix]
 
     # 방문량 분포, 숨은 지역 후보 수, 볼거리(사진 수)와 방문량의 관계
-    dist = conn.execute("""
+    # 기준값(HP, HA)은 코드 상수라 문자열에 바로 넣는다
+    dist = conn.execute(f"""
         WITH a AS (SELECT region_id, count(*) AS cnt FROM attractions GROUP BY region_id)
         SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY s.avg_daily_visitors) AS median_daily_visitors,
-               max(s.avg_daily_visitors) FILTER (WHERE s.percentile <= 20) AS threshold_p20,
-               max(s.avg_daily_visitors) FILTER (WHERE s.percentile <= 30) AS threshold_p30,
-               count(*) FILTER (WHERE s.percentile <= 20 AND COALESCE(a.cnt, 0) >= 3) AS hidden_p20,
-               count(*) FILTER (WHERE s.percentile <= 30 AND COALESCE(a.cnt, 0) >= 3) AS hidden_p30,
-               count(*) FILTER (WHERE s.percentile <= 20 AND COALESCE(a.cnt, 0) >= 3
-                                AND r.signgu_nm LIKE '%군') AS hidden_p20_gun,
+               max(s.avg_daily_visitors) FILTER (WHERE s.percentile <= {HP}) AS threshold_hidden,
+               count(*) FILTER (WHERE s.percentile <= {HP} AND COALESCE(a.cnt, 0) >= {HA}) AS hidden_count,
+               count(*) FILTER (WHERE s.percentile <= {HP} AND COALESCE(a.cnt, 0) >= {HA}
+                                AND r.signgu_nm LIKE '%군') AS hidden_gun_count,
+               count(*) FILTER (WHERE s.percentile <= 20 AND COALESCE(a.cnt, 0) >= {HA}) AS hidden_p20,
                corr(ln(s.avg_daily_visitors), ln(a.cnt)) AS corr_log_attractions_visitors,
                percentile_cont(0.5) WITHIN GROUP (ORDER BY COALESCE(a.cnt, 0))
                    FILTER (WHERE s.percentile <= 20) AS median_attractions_bottom20,
@@ -79,6 +80,7 @@ def overview(conn: psycopg.Connection = Depends(get_conn)):
 
     return {
         "window_start": win["ws"], "window_end": win["we"], **counts,
+        "hidden_max_percentile": HP, "hidden_min_attractions": HA,
         "visitor_mix": visitor_mix,
         "local_share_lowest": conn.execute(LOCAL_SHARE + " ORDER BY local_share LIMIT 3").fetchall(),
         "local_share_highest": conn.execute(LOCAL_SHARE + " ORDER BY local_share DESC LIMIT 3").fetchall(),
@@ -97,7 +99,7 @@ def by_sido(conn: psycopg.Connection = Depends(get_conn)):
                round(100 * sum(t.l) / sum(t.l + t.o + t.f), 1) AS local_share,
                round(100 * sum(t.o) / sum(t.l + t.o + t.f), 1) AS outsider_share,
                round(100 * sum(t.f) / sum(t.l + t.o + t.f), 1) AS foreigner_share,
-               count(*) FILTER (WHERE s.percentile <= 20 AND COALESCE(a.cnt, 0) >= 3) AS hidden_count,
+               count(*) FILTER (WHERE s.percentile <= {HP} AND COALESCE(a.cnt, 0) >= {HA}) AS hidden_count,
                COALESCE(sum(a.cnt), 0) AS attraction_count
         FROM region_master r
         JOIN visitor_summary s USING (region_id)

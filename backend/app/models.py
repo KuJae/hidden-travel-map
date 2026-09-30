@@ -21,6 +21,7 @@ class RegionSummary(BaseModel):
     percentile: float | None = Field(description="전국 방문량 백분위 0~100. 작을수록 덜 방문 ('하위 N%')")
     ghost_index: float | None = Field(description="100 - percentile. 팀이 정의한 탐색용 지표")
     attraction_count: int = Field(description="사진 있는 관광지 수")
+    is_candidate: bool = Field(description="숨은 지역 후보 여부 (방문량 하위 30% 이면서 사진 있는 관광지 3곳 이상)")
 
 
 class VisitorMix(BaseModel):
@@ -48,11 +49,12 @@ class StatsOverview(BaseModel):
     local_share_lowest: list[RegionShare] = Field(description="현지인 비중이 가장 낮은 곳")
     local_share_highest: list[RegionShare] = Field(description="현지인 비중이 가장 높은 곳")
     median_daily_visitors: float
-    threshold_p20: float = Field(description="방문량 하위 20% 경계 (외지인+외국인 일평균)")
-    threshold_p30: float = Field(description="방문량 하위 30% 경계")
-    hidden_p20: int = Field(description="하위 20% 이면서 사진 있는 관광지 3곳 이상인 지역 수")
-    hidden_p30: int = Field(description="하위 30% 이면서 사진 있는 관광지 3곳 이상인 지역 수")
-    hidden_p20_gun: int = Field(description="hidden_p20 중 이름이 '군'으로 끝나는 지역 수")
+    hidden_max_percentile: int = Field(description="숨은 지역 후보 기준: 방문량 하위 몇 % (팀 기준 30)")
+    hidden_min_attractions: int = Field(description="숨은 지역 후보 기준: 사진 있는 관광지 최소 개수 (팀 기준 3)")
+    threshold_hidden: float = Field(description="기준 백분위에 해당하는 방문량 경계 (외지인+외국인 일평균)")
+    hidden_count: int = Field(description="숨은 지역 후보 수")
+    hidden_gun_count: int = Field(description="숨은 지역 후보 중 이름이 '군'으로 끝나는 지역 수")
+    hidden_p20: int = Field(description="비교용: 기준을 하위 20% 로 좁혔을 때의 후보 수")
     corr_log_attractions_visitors: float = Field(
         description="ln(사진 있는 관광지 수) 와 ln(일평균 방문량) 의 피어슨 상관계수. 0 에 가까우면 볼거리와 방문량이 무관")
     median_attractions_bottom20: float = Field(description="방문량 하위 20% 지역의 사진 있는 관광지 수 중앙값")
@@ -67,7 +69,7 @@ class SidoStats(BaseModel):
     local_share: float = Field(description="현지인 비중 (%)")
     outsider_share: float = Field(description="외지인 비중 (%)")
     foreigner_share: float = Field(description="외국인 비중 (%)")
-    hidden_count: int = Field(description="숨은 지역 후보 수 (하위 20%, 사진 3곳 이상)")
+    hidden_count: int = Field(description="숨은 지역 후보 수 (하위 30%, 사진 3곳 이상)")
     attraction_count: int
 
 
