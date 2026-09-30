@@ -5,6 +5,7 @@ services:
     name: hidden-travel-map-api
     runtime: python
     plan: free
+    region: singapore   # DB(Supabase)가 서울이라 가장 가까운 리전 (기본값 oregon 은 요청마다 태평양 왕복)
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     # app/ 패키지 구조라 main:app 이 아니라 app.main:app, 포트는 반드시 $PORT
