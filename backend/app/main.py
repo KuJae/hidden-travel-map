@@ -16,6 +16,28 @@ app = FastAPI(
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"])
 
 
+# DB 접속 오류를 흔한 원인별로 알려 준다. 오류 원문에는 접속 주소가 섞일 수 있어 그대로 돌려주지 않는다.
+DB_ERROR_HINTS = [
+    ("password authentication failed", "비밀번호가 맞지 않습니다"),
+    ("tenant or user not found", "사용자명(postgres.프로젝트ref)이 맞지 않습니다"),
+    ("could not translate host name", "호스트 주소를 찾을 수 없습니다"),
+    ("nodename nor servname", "호스트 주소를 찾을 수 없습니다"),
+    ("network is unreachable", "네트워크에 닿지 않습니다 (Supabase Session pooler 주소를 쓰세요)"),
+    ("timeout", "접속 시간이 초과됐습니다"),
+    ("invalid dsn", "DATABASE_URL 형식이 잘못됐습니다 (따옴표·공백·'DATABASE_URL=' 이 들어갔는지 확인)"),
+    ("invalid connection option", "DATABASE_URL 형식이 잘못됐습니다"),
+    ("invalid integer value", "DATABASE_URL 의 포트가 잘못됐습니다"),
+]
+
+
+def _db_error_hint(e: psycopg.Error) -> str:
+    msg = str(e).lower()
+    for key, hint in DB_ERROR_HINTS:
+        if key in msg:
+            return f"{type(e).__name__}: {hint}"
+    return type(e).__name__
+
+
 @app.get("/", include_in_schema=False)
 def read_root():
     return {"message": "숨은여행지도 API", "docs": "/docs"}
@@ -30,7 +52,7 @@ def health_check():
     except RuntimeError as e:
         return JSONResponse(status_code=503, content={"status": "error", "db": str(e)})
     except psycopg.Error as e:
-        return JSONResponse(status_code=503, content={"status": "error", "db": type(e).__name__})
+        return JSONResponse(status_code=503, content={"status": "error", "db": _db_error_hint(e)})
     return {"status": "ok", "db": "ok"}
 
 

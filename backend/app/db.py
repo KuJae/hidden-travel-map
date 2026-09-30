@@ -11,7 +11,8 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 def connect() -> psycopg.Connection:
-    url = os.getenv("DATABASE_URL")
+    # 대시보드에 붙여 넣을 때 흔히 딸려 오는 앞뒤 공백·줄바꿈·따옴표를 떼어 낸다
+    url = os.getenv("DATABASE_URL", "").strip().strip("\"'").strip()
     if not url:
         raise RuntimeError("DATABASE_URL 이 설정되지 않았습니다")
     # prepare_threshold=None: Supabase pooler 에서 prepared statement 오류가 나지 않게 한다
