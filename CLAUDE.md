@@ -100,6 +100,12 @@
 - [실호출 확인] 가끔 옛 코드 행이 섞인다 (8/4 인천 서구 28260 외국인 1행). region_master 기준으로 저장하므로 자동 제외된다.
 - [실호출 확인] TourAPI: 종로구 lDongRegnCd=11, lDongSignguCd=110. 응답 필드는 소문자(contentid, sigungucode, cpyrhtDivCd…). 종로구 첫 100건 중 옛 areacode/sigungucode 빈 값 54건. 서울 관광지·문화시설·레포츠 중 종로구 사진 있는 곳 297곳.
 - [실호출 확인] TourAPI 사진은 공공누리 Type1(출처표시) 또는 Type3(출처표시+변경금지) → 화면에 "출처: 한국관광공사" 표시, 사진 변형 주의. attractions.image_license 에 저장. 이미지 URL 일부가 http:// 라 https 로 바꿔 저장한다.
+- [실호출 확인] SGIS: 종로구 adm_cd 11010, 좌표 UTM-K(EPSG:5179) 확인. 경계 최신 연도는 2025 (2026 요청 시 errCd -200).
+  2025 경계의 인천(SGIS 23)은 옛 체계 10개(중구·동구·서구…)라 관광빅데이터 새 체계 11개(제물포구·영종구·서해구·검단구…)와 1:1이 아니다 → 인천은 경계 합치기나 근사 매핑 필요.
+  광주(SGIS 24, 5개)·전남(SGIS 36, 22개)은 관광빅데이터 12xxx 와 이름이 1:1 대응한다.
+- [실호출 확인] Supabase 새 프로젝트 기본값은 Data API 켜짐 + 새 테이블 자동 공개 + RLS 꺼짐이라 anon 키로 테이블 읽기·쓰기가 가능했다.
+  db/schema.sql 에서 RLS 를 켜고 anon·authenticated 권한을 회수한다. postgres 계정은 BYPASSRLS 라 FastAPI·수집기에는 영향 없음.
+- Supabase Session pooler 호스트는 aws-0-ap-northeast-2.pooler.supabase.com:5432, 사용자명은 postgres.<프로젝트 ref>.
 - apis.data.go.kr 연결이 가끔 30초 넘게 끊긴다. 수집기는 3번까지 재시도하고, 오류 메시지에 인증키가 든 URL이 찍히지 않게 했다.
 - 공개 지연이 약 1개월 (예: 9/10 기준 8/11 데이터까지만 존재). 화면 문구는 "최근 30일" 대신 "최신 공개 기준 30일"로 쓰고 기준일을 표시할 것.
 - 방문자 수는 일자별 순방문자 기준 (2박 3일 체류 = 3명). 기초·광역 데이터는 집계 기준이 달라 임의 합산 불가.
