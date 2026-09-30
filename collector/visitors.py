@@ -20,12 +20,15 @@ DO UPDATE SET visitor_count = EXCLUDED.visitor_count
 """
 
 # 가장 최근 날짜부터 N일 창에서 외지인(2)+외국인(3) 일평균 → 전국 백분위 → Ghost Index
+# 시 단위(일반구가 아닌 지역)끼리만 순위를 매긴다. 수원시와 장안구를 함께 세면 이중 계산이 된다.
 SUMMARY = """
 WITH win AS (
     SELECT max(base_date) AS end_date FROM visitor_daily
 ), daily AS (
     SELECT v.region_id, v.base_date, sum(v.visitor_count) AS cnt
-    FROM visitor_daily v, win
+    FROM visitor_daily v
+    JOIN region_master r ON r.region_id = v.region_id AND r.parent_region_id IS NULL
+    CROSS JOIN win
     WHERE v.visitor_type IN (2, 3) AND v.base_date > win.end_date - %(days)s::int
     GROUP BY v.region_id, v.base_date
 ), avg_by_region AS (
@@ -83,19 +86,22 @@ def main():
             saved += len(batch)
             print(f"  {ymd}: 받음 {len(rows)}행, 저장 {len(batch)}행")
 
+        conn.execute("DELETE FROM visitor_summary WHERE region_id IN "
+                     "(SELECT region_id FROM region_master WHERE parent_region_id IS NOT NULL)")
         conn.execute(SUMMARY, {"days": args.days})
         conn.commit()
-        print(f"완료: 저장 {saved}행, region_master 에 없는 시군구 코드 {len(unmatched)}개 (전국 확대 때 매핑 대상)")
+        print(f"완료: 저장 {saved}행, region_master 에 없는 시군구 코드 {sorted(unmatched) or '없음'}")
         if len(regions) == 1:
             print("참고: 지역이 1곳뿐이라 백분위·Ghost Index 는 아직 의미가 없습니다 (전국 확대 후 의미가 생김).")
 
         summary = conn.execute("""
-            SELECT r.signgu_nm, s.window_start, s.window_end, s.avg_daily_visitors, s.percentile, s.ghost_index
+            SELECT r.sido_nm, r.signgu_nm, s.window_start, s.window_end, s.avg_daily_visitors, s.percentile, s.ghost_index
             FROM visitor_summary s JOIN region_master r USING (region_id)
             ORDER BY s.ghost_index DESC LIMIT 5
         """).fetchall()
-        for nm, ws, we, avg, pct, ghost in summary:
-            print(f"  {nm}: {ws}~{we} 일평균 {avg}명, 하위 {pct}%, Ghost Index {ghost}")
+        print(f"시 단위 {conn.execute('SELECT count(*) FROM visitor_summary').fetchone()[0]}곳 순위 계산. 방문이 가장 적은 5곳:")
+        for sido, nm, ws, we, avg, pct, ghost in summary:
+            print(f"  {sido} {nm}: {ws}~{we} 일평균 {avg}명, 하위 {pct}%, Ghost Index {ghost}")
 
 
 if __name__ == "__main__":

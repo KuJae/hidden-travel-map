@@ -4,6 +4,7 @@
 
 region_master 의 시도(lDongRegnCd)마다 한 번에 받아, 등록된 시군구의 콘텐츠만 저장한다.
 옛 areaCode/sigunguCode 는 비어 있는 콘텐츠가 많아 반드시 법정동 코드(lDong*)로 조회·매칭한다.
+일반구(예: 수원시 장안구)의 관광지는 상위 시(수원시)로 모아 저장한다.
 """
 from common import TOUR_URL, connect, fetch_all
 
@@ -36,7 +37,7 @@ def to_float(value):
 def main():
     with connect() as conn:
         rows = conn.execute("""
-            SELECT ldong_regn_cd, ldong_signgu_cd, region_id FROM region_master
+            SELECT ldong_regn_cd, ldong_signgu_cd, COALESCE(parent_region_id, region_id) FROM region_master
             WHERE ldong_regn_cd IS NOT NULL AND ldong_signgu_cd IS NOT NULL
         """).fetchall()
         regions = {(regn, sgg): region_id for regn, sgg, region_id in rows}
@@ -65,11 +66,15 @@ def main():
                 conn.commit()
                 print(f"  시도 {regn} {type_nm}: 받음 {len(items)}건, 저장 {len(batch)}건")
 
-        for nm, cnt in conn.execute("""
-            SELECT r.signgu_nm, count(a.content_id) FROM region_master r
-            LEFT JOIN attractions a USING (region_id) GROUP BY r.signgu_nm ORDER BY 2 DESC
-        """).fetchall():
-            print(f"{nm}: 사진 있는 관광지 {cnt}곳")
+        counts = conn.execute("""
+            SELECT r.sido_nm || ' ' || r.signgu_nm, count(a.content_id) FROM region_master r
+            LEFT JOIN attractions a USING (region_id)
+            WHERE r.parent_region_id IS NULL GROUP BY 1 ORDER BY 2
+        """).fetchall()
+        total = sum(c for _, c in counts)
+        print(f"시 단위 {len(counts)}곳, 사진 있는 관광지 {total}곳. "
+              f"3곳 이상인 지역 {sum(1 for _, c in counts if c >= 3)}곳")
+        print(f"3곳 미만인 지역: {[f'{nm}({c})' for nm, c in counts if c < 3] or '없음'}")
 
 
 if __name__ == "__main__":

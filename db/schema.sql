@@ -6,19 +6,24 @@
 --   region_master 1 ── N visitor_daily     (region_id)
 --   region_master 1 ── 1 visitor_summary   (region_id)
 --   region_master 1 ── N attractions       (region_id)
+--   region_master 1 ── N region_master     (parent_region_id: 시 ── 일반구)
 
 
--- 1) 지역 마스터: 세 데이터 출처의 서로 다른 시군구 코드를 한 행으로 잇는다.
+-- 1) 지역 마스터: 세 데이터 출처의 서로 다른 시군구 코드를 한 행으로 잇는다. collector/regions.py 가 채운다.
 --    수집기는 이 표에 있는 지역만 저장하므로, 전국 확대 = 이 표에 행을 채우는 일이다.
+--    순위·API 는 시 단위(parent_region_id 가 NULL 인 행)만 쓴다. 일반구 행은 관광지를 상위 시로 모으는 데 쓴다.
 CREATE TABLE IF NOT EXISTS region_master (
     region_id        SERIAL PRIMARY KEY,
     sido_nm          TEXT NOT NULL,          -- 시도명 (예: 서울특별시)
-    signgu_nm        TEXT NOT NULL,          -- 시군구명 (예: 종로구)
+    signgu_nm        TEXT NOT NULL,          -- 시군구명 (예: 종로구, 수원시 장안구)
     datalab_code     TEXT NOT NULL UNIQUE,   -- 관광빅데이터 signguCode (예: 11110). API 경로의 {code}
-    ldong_regn_cd    TEXT,                   -- TourAPI lDongRegnCd, 법정동 시도 코드 (예: 11)
+    ldong_regn_cd    TEXT,                   -- TourAPI lDongRegnCd, 법정동 시도 코드 (예: 11). datalab_code 앞 2자리와 같다
     ldong_signgu_cd  TEXT,                   -- TourAPI lDongSignguCd, 법정동 시군구 코드 (예: 110)
-    sgis_code        TEXT                    -- SGIS 경계 adm_cd (예: 11010). 법정동 코드와 체계가 다르다
+    sgis_code        TEXT,                   -- SGIS 2025 경계 adm_cd (예: 11010). 체계가 달라 이름으로 매칭. 일반구가 있는 시는 NULL
+    parent_region_id INTEGER REFERENCES region_master (region_id)   -- 일반구면 상위 시 (예: 수원시 장안구 → 수원시)
 );
+-- 이미 만든 DB 에 컬럼을 더하기 위한 줄 (새 DB 에서는 아무 일도 안 함)
+ALTER TABLE region_master ADD COLUMN IF NOT EXISTS parent_region_id INTEGER REFERENCES region_master (region_id);
 
 
 -- 2) 일별 방문자 수: 관광빅데이터 locgoRegnVisitrDDList 원본을 지역·날짜·관광객 구분별로 저장
