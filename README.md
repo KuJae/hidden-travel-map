@@ -5,6 +5,7 @@ KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 (이강훈, 강재구
 
 - 팀 페이지: https://kujae.github.io/hidden-travel-map/
 - 저장소: https://github.com/KuJae/hidden-travel-map
+- API (Swagger UI): https://hidden-travel-map-api.onrender.com/docs  — 무료 플랜이라 한동안 안 쓰면 잠들어 첫 요청이 1분쯤 걸림
 
 ## 폴더 구조
 

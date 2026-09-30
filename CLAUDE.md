@@ -170,6 +170,8 @@ hidden-travel-map/
 - 팀 결정 사항: 역할 분담과 결과물 설명은 페이지에서 뺐다. 팀원은 이름만 표시한다.
 - claude.ai에서 만든 미리보기 버전이 따로 있지만 Git 수정 사항은 반영되지 않는다. 과제 제출은 GitHub Pages 주소로 한다.
 - 저장소: https://github.com/KuJae/hidden-travel-map (Public, 소유자 KuJae) / 팀 페이지: https://kujae.github.io/hidden-travel-map/
+- API: https://hidden-travel-map-api.onrender.com (Swagger /docs). Render 무료·싱가포르·rootDir backend·main push 시 자동 배포. 환경변수 DATABASE_URL 은 Render 대시보드에만 있다.
+- 진행 상태(2026-09-30): 종로구 1곳 End-to-End 완료 — 관광빅데이터 30일·TourAPI 관광지 297곳이 Supabase 에 있고, 배포된 API 가 응답한다. 다음은 6주차 전국 확대(region_master, 시 단위).
 
 ## 8. 작업 규칙
 - API 키나 비밀 값은 절대 커밋하지 않는다. 커밋 전 git status로 확인한다.
