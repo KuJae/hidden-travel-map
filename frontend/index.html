@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>숨은여행지도</title>
+<meta name="description" content="관광빅데이터로 사람들이 덜 가는 곳을 먼저 찾아주는 역발상 여행 지도">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+      integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="style.css">
+<style>
+.layout{display:grid;gap:18px;padding-bottom:24px}
+@media (min-width:960px){.layout{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}}
+.map-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative}
+#map{height:min(74vh,720px);min-height:420px;border-radius:16px;background:var(--panel)}
+.leaflet-container{background:var(--panel);font-family:var(--sans)}
+.leaflet-tooltip{font-family:var(--sans);font-size:13px;border-radius:8px}
+.map-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:.82rem;color:var(--muted);padding:10px 8px 4px}
+.ramp{display:inline-flex;gap:2px;vertical-align:middle}
+.ramp i{width:18px;height:10px;border-radius:3px;display:inline-block}
+.side{display:grid;gap:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 22px}
+.panel h2{font-size:1.45rem}
+.badge{display:inline-block;font-size:.78rem;font-weight:600;color:var(--lantern-ink);background:var(--lantern-tint);padding:3px 10px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.ghost-row{display:flex;align-items:flex-end;gap:12px;margin:14px 0 12px}
+.ghost-num{font-size:3.2rem;font-weight:600;line-height:.95}
+.ghost-label{font-size:.82rem;color:var(--muted);line-height:1.35;padding-bottom:3px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+.facts div{border-top:1px solid var(--line);padding-top:8px}
+.facts dt{font-size:.78rem;color:var(--muted)}
+.facts dd{margin:0;font-weight:600}
+.photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.photo{margin:0;background:var(--bg);border-radius:12px;overflow:hidden}
+/* 공공누리 3유형(변경 금지) 사진이 많아 잘라내지 않고 원본 비율 그대로 보여 준다 */
+.photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--line)}
+.photo figcaption{padding:8px 10px;font-size:.82rem;line-height:1.4}
+.photo figcaption b{display:block;font-size:.88rem}
+.photo figcaption span{color:var(--muted)}
+.cands{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.cands button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid transparent;border-radius:10px;padding:8px 12px;cursor:pointer;min-height:44px;text-align:left}
+.cands button:hover,.cands button[aria-pressed="true"]{border-color:var(--forest)}
+.cands .g{font-weight:600;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted);font-size:.86rem}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <a class="brand" href="index.html">
+    <svg viewBox="0 0 36 36" aria-hidden="true"><polygon points="18,2.5 31.5,10.25 31.5,25.75 18,33.5 4.5,25.75 4.5,10.25" style="fill:var(--forest)"/><circle cx="23" cy="14" r="4.2" style="fill:var(--lantern)"/></svg>
+    숨은여행지도
+  </a>
+  <nav class="nav" aria-label="메뉴">
+    <a href="index.html" aria-current="page">지도</a>
+    <a href="analysis.html">데이터 분석</a>
+    <a href="https://hidden-travel-map-api.onrender.com/docs">API 문서</a>
+    <a href="https://kujae.github.io/hidden-travel-map/">팀 페이지</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="status" id="status" role="status" style="margin:0 0 10px">지도를 불러오는 중입니다.</p>
+  <div class="layout">
+    <div class="map-card">
+      <div id="map" aria-label="전국 시군구 방문량 지도"></div>
+      <div class="map-legend" aria-hidden="true">
+        <span>방문 적음</span>
+        <span class="ramp"><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i><i style="background:var(--l4)"></i><i style="background:var(--l5)"></i></span>
+        <span>방문 많음</span>
+        <span><span class="ramp"><i style="background:var(--lantern)"></i></span> 숨은 지역 후보</span>
+      </div>
+    </div>
+
+    <div class="side">
+      <section class="panel" id="detail" aria-live="polite">
+        <h2>사람들이 덜 가는 곳을 찾아보세요</h2>
+        <p class="muted" style="margin-top:8px">지도에서 연하게 칠해진 곳일수록 방문이 적습니다. 지역을 누르면 방문량과 관광지 사진이 나옵니다.</p>
+      </section>
+      <section class="panel">
+        <h2 style="font-size:1.15rem">숨은 지역 후보</h2>
+        <p class="muted" id="cand-desc">방문량 하위 20% 이면서 사진 있는 관광지가 3곳 이상인 곳</p>
+        <ul class="cands" id="cands"></ul>
+        <div class="pick-row" style="margin-top:14px">
+          <label for="pick" class="muted">다른 지역 고르기</label>
+          <select id="pick"><option value="">지역 선택</option></select>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="foot wrap">
+  <div class="inner">
+    <p>방문량: 한국관광공사 빅데이터 지역별 방문자수 (외지인+외국인, 최신 공개 기준 30일) · 관광지와 사진: 한국관광공사 TourAPI · 경계: 국가데이터처 SGIS (2025, 인천 신설 구는 읍면동 경계를 합쳐 만듦)</p>
+    <p>Ghost Index 는 팀이 정의한 탐색용 지표입니다. 계산 방법은 <a href="analysis.html#ghost">데이터 분석</a>에 있습니다.</p>
+    <p>KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+        integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+import { getJSON, num } from "./api.js";
+
+const $ = id => document.getElementById(id);
+const status = $("status");
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const short = d => { const [, m, dd] = d.split("-"); return `${+m}/${+dd}`; };
+const isCandidate = r => r && r.percentile <= 20 && r.attraction_count >= 3;
+const ghost = v => (Number.isInteger(v) ? String(v) : v.toFixed(1));   // 99.6 이 100 으로 반올림돼 보이지 않게
+const KOREA = [[33.1, 124.6], [38.65, 131.0]];   // 제주·울릉도까지 (독도까지 넣으면 본토가 너무 작아진다)
+let regions = new Map(), layer, map, selected = null;
+
+// 방문량 백분위 5단계(연함 → 진함), 숨은 지역 후보는 등불색
+function styleFor(feature) {
+  const r = regions.get(feature.properties.code);
+  const steps = ["--l1", "--l2", "--l3", "--l4", "--l5"].map(css);
+  const fill = !r || r.percentile == null ? css("--line")
+    : isCandidate(r) ? css("--lantern") : steps[Math.min(4, Math.floor(r.percentile / 20))];
+  const on = feature.properties.code === selected;
+  return { fillColor: fill, fillOpacity: 1, color: on ? css("--ink") : css("--panel"), weight: on ? 2.5 : 0.6 };
+}
+
+function el(tag, cls, textValue) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (textValue != null) n.textContent = textValue;
+  return n;
+}
+
+async function select(code, { zoom = false } = {}) {
+  const r = regions.get(code);
+  if (!r) return;
+  selected = code;
+  if (location.hash !== `#${code}`) history.replaceState(null, "", `#${code}`);
+  layer.setStyle(styleFor);
+  layer.eachLayer(l => { if (l.feature.properties.code === code) { l.bringToFront(); if (zoom) map.fitBounds(l.getBounds(), { maxZoom: 8, padding: [40, 40] }); } });
+  for (const b of $("cands").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.code === code));
+  $("pick").value = code;
+
+  const d = $("detail");
+  d.textContent = "";
+  const h = el("h2", null, `${r.sido_nm} ${r.signgu_nm}`);
+  if (isCandidate(r)) h.appendChild(el("span", "badge", "숨은 지역 후보"));
+  const g = el("div", "ghost-row");
+  const gl = el("span", "ghost-label");
+  gl.append("Ghost Index", document.createElement("br"), "100점 만점");
+  g.append(el("span", "ghost-num", ghost(r.ghost_index)), gl);
+  const all = [...regions.values()];
+  const rank = all.filter(x => x.avg_daily_visitors < r.avg_daily_visitors).length + 1;
+  const facts = el("dl", "facts");
+  for (const [k, v] of [["하루 평균 방문 (외지인+외국인)", `${num(r.avg_daily_visitors)}명`], ["방문 적은 순", `전국 ${all.length}곳 중 ${rank}위`],
+                        ["사진 있는 관광지", `${num(r.attraction_count)}곳`], ["집계 기간", `${short(r.window_start)}~${short(r.window_end)} (최신 공개 기준)`]]) {
+    const box = el("div"); box.append(el("dt", null, k), el("dd", null, v)); facts.appendChild(box);
+  }
+  const photos = el("div", "photos");
+  photos.appendChild(el("p", "muted", "관광지 사진을 불러오는 중입니다."));
+  d.append(h, g, facts, photos);
+
+  try {
+    const list = await getJSON(`/regions/${code}/attractions?limit=6`);
+    if (selected !== code) return;   // 그사이 다른 지역을 눌렀으면 버린다
+    photos.textContent = "";
+    for (const a of list) {
+      const fig = el("figure", "photo");
+      const img = el("img"); img.src = a.image_url; img.alt = a.title; img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+      const cap = el("figcaption");
+      cap.append(el("b", null, a.title), el("span", null, [a.category, (a.address || "").split(" ").slice(0, 3).join(" ")].filter(Boolean).join(" · ")));
+      fig.append(img, cap); photos.appendChild(fig);
+    }
+    d.appendChild(el("p", "muted", "사진 출처: 한국관광공사 (공공누리)"));
+  } catch (e) {
+    photos.textContent = "";
+    photos.appendChild(el("p", "muted", `관광지를 불러오지 못했습니다: ${e.message}`));
+  }
+}
+
+async function main() {
+  const slow = () => { status.textContent = "서버를 깨우는 중입니다. 무료 서버라 처음 한 번은 1분 가까이 걸릴 수 있습니다."; };
+  try {
+    const [geo, list, hidden] = await Promise.all([
+      fetch("data/sigungu.geojson").then(r => r.json()), getJSON("/regions", slow), getJSON("/hidden?limit=12", slow)]);
+    regions = new Map(list.map(r => [r.code, r]));
+
+    map = L.map("map", { zoomSnap: 0.25, minZoom: 6, maxZoom: 11, attributionControl: true });
+    map.attributionControl.setPrefix(false).addAttribution("경계: 국가데이터처 SGIS");
+    layer = L.geoJSON(geo, {
+      style: styleFor,
+      onEachFeature(f, l) {
+        const r = regions.get(f.properties.code);
+        l.bindTooltip(r ? `${r.sido_nm} ${r.signgu_nm} · 하위 ${num(r.percentile, 0)}%` : f.properties.signgu_nm, { sticky: true, direction: "top" });
+        l.on("mouseover", () => { if (f.properties.code !== selected) l.setStyle({ color: css("--ink"), weight: 1.5 }); });
+        l.on("mouseout", () => layer.resetStyle(l));
+        l.on("click", () => select(f.properties.code));
+      },
+    }).addTo(map);
+    map.fitBounds(KOREA);
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => layer.setStyle(styleFor));
+
+    const ul = $("cands");
+    $("cand-desc").textContent = `방문량 하위 20% 이면서 사진 있는 관광지가 3곳 이상인 ${list.filter(isCandidate).length}곳 중 방문이 가장 적은 ${hidden.length}곳`;
+    for (const r of hidden) {
+      const li = el("li"), b = el("button");
+      b.type = "button"; b.dataset.code = r.code; b.setAttribute("aria-pressed", "false");
+      b.append(el("span", null, `${r.sido_nm} ${r.signgu_nm}`), el("span", "g", `Ghost ${ghost(r.ghost_index)}`));
+      b.addEventListener("click", () => select(r.code, { zoom: true }));
+      li.appendChild(b); ul.appendChild(li);
+    }
+    const pick = $("pick");
+    for (const r of [...list].sort((a, b) => (a.sido_nm + a.signgu_nm).localeCompare(b.sido_nm + b.signgu_nm, "ko"))) {
+      const o = el("option", null, `${r.sido_nm} ${r.signgu_nm}`); o.value = r.code; pick.appendChild(o);
+    }
+    pick.addEventListener("change", () => pick.value && select(pick.value, { zoom: true }));
+    status.textContent = `최신 공개 기준 30일 (${short(list[0].window_start)}~${short(list[0].window_end)}) 외지인·외국인 방문량입니다.`;
+    // 주소 뒤에 #47760 처럼 지역 코드를 붙이면 그 지역을 선택한 채로 연다 (발표 데모용 링크)
+    const fromHash = () => { const c = location.hash.slice(1); if (regions.has(c)) select(c, { zoom: true }); };
+    addEventListener("hashchange", fromHash);
+    fromHash();
+  } catch (e) {
+    status.classList.add("err");
+    status.textContent = `지도를 불러오지 못했습니다: ${e.message}. 잠시 뒤 새로고침해 주세요.`;
+  }
+}
+main();
+</script>
+</body>
+</html>
