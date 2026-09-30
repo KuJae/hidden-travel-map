@@ -119,7 +119,9 @@
 - Render → Supabase 연결은 Session pooler 주소를 쓴다 (직접 연결 주소는 IPv6 전용).
 - Render·Supabase 무료 플랜은 미사용 시 잠들거나 일시정지될 수 있다. 발표 직전 /health 호출로 깨워둘 것.
 - Ghost Index는 절대 방문량 백분위라 인구·면적이 작은 군이 구조적으로 상위에 온다. "관광 가치 평가가 아닌 탐색용 지표"로 설명할 것.
-- 확인 필요: 숨은 지역 후보 기준은 "방문량 하위 20%"인데 테마 탐색 목업 필터는 "하위 30%". 이강훈 님과 통일 필요.
+- **결정(2026-09-30, 강재구): 숨은 지역 후보 = 방문량 하위 30% AND 사진 있는 관광지 3곳 이상** (기획안 본문 20% / 목업 30% 중 30%). 후보 69곳(20%였으면 46곳).
+  기준값은 backend/app/rules.py 한 곳에만 있고, API 가 지역마다 is_candidate 를 내려 준다. 화면은 이 값만 쓴다.
+  팀 페이지(docs/index.html)의 "하위 20%" 문구는 아직 그대로다 (팀 페이지는 요청 시에만 고친다).
 
 ## 5. 아키텍처와 백엔드 설계 (기획안 기준)
 - 흐름: 외부 API(관광공사, SGIS) → 수집기(Python) → DB(PostgreSQL/Supabase) → 우리 API(FastAPI) → 화면(React, Leaflet)
@@ -128,7 +130,7 @@
   - visitor_daily: region_id, date, visitor_type, visitor_count (같은 요청을 다시 해도 중복 저장되지 않게 키 설정)
   - visitor_summary: 최근 30일 일평균 방문량, 방문량 백분위, Ghost Index
   - attractions: content_id, region_id, title, category, address, lat, lon, image_url
-- 계산: 일별 방문량 = 외지인 + 외국인 → 30일 평균 → 전국 백분위 → Ghost Index = 100 − 방문량 백분위 → 후보 = 방문량 하위 20% AND 사진 있는 관광지 3곳 이상. Ghost Index는 팀이 정의한 지표이며 관광공사 공식 지표가 아님
+- 계산: 일별 방문량 = 외지인 + 외국인 → 30일 평균 → 전국 백분위 → Ghost Index = 100 − 방문량 백분위 → 후보 = 방문량 하위 30% AND 사진 있는 관광지 3곳 이상 (기획안은 20%, 2026-09-30 30%로 결정). Ghost Index는 팀이 정의한 지표이며 관광공사 공식 지표가 아님
 - FastAPI 엔드포인트 (/docs Swagger에서 테스트)
   - GET /health: 서버·DB 연결 확인
   - GET /regions: 전국 시군구 avg_daily_visitors, percentile, ghost_index → 지도 색칠
