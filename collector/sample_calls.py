@@ -10,7 +10,7 @@ from collections import Counter
 import requests
 
 from common import (DATALAB_URL, ROOT, SGIS_URL, TOUR_URL, call_data_go_kr, fetch_all,
-                    find_latest_visitor_date, items_of, save_raw, sgis_token)
+                    find_latest_visitor_date, http_get, items_of, save_raw, sgis_token)
 
 
 def sample_datalab():
@@ -62,9 +62,9 @@ def sample_sgis():
     print("\n[3] SGIS hadmarea.geojson (서울 시군구 경계)")
     token = sgis_token()
     for year in ("2025", "2024", "2023"):
-        data = requests.get(f"{SGIS_URL}/boundary/hadmarea.geojson", timeout=60, params={
+        data = http_get(f"{SGIS_URL}/boundary/hadmarea.geojson", {
             "accessToken": token, "year": year, "adm_cd": "11", "low_search": "1",
-        }).json()
+        }, "SGIS 경계").json()
         if data.get("features"):
             break
         print(f"  year={year}: {data.get('errCd')} {data.get('errMsg')}")

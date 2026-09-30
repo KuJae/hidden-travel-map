@@ -99,4 +99,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeError as e:
+        raise SystemExit(f"중단: {e}\n그때까지 받은 날짜는 저장됐습니다. 다시 실행하면 중복 없이 이어서 저장합니다.")

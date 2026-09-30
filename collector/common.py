@@ -1,6 +1,7 @@
 """수집기 공통 모듈: .env 읽기, 공공데이터포털·SGIS 호출, DB 연결."""
 import json
 import os
+import time
 from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import unquote
@@ -27,6 +28,23 @@ def env(name: str) -> str:
     return value
 
 
+def http_get(url: str, params: dict, what: str, tries: int = 3) -> requests.Response:
+    """GET 을 최대 tries 번 시도한다. 공공 API 는 가끔 연결이 끊기거나 응답이 늦다.
+    requests 오류 메시지에는 인증키가 든 URL 이 통째로 찍히므로, 오류 종류만 남긴다."""
+    for attempt in range(1, tries + 1):
+        try:
+            res = requests.get(url, params=params, timeout=30)
+            if res.status_code < 500:
+                return res
+            reason = f"HTTP {res.status_code}"
+        except requests.RequestException as e:
+            reason = type(e).__name__
+        if attempt < tries:
+            print(f"  {what}: {reason}, {3 * attempt}초 뒤 다시 시도 ({attempt}/{tries})")
+            time.sleep(3 * attempt)
+    raise RuntimeError(f"{what}: {tries}번 시도했지만 실패 ({reason})")
+
+
 def call_data_go_kr(base: str, operation: str, key_name: str, **params) -> dict:
     """공공데이터포털 API 한 페이지를 불러 response.body 를 돌려준다. 오류면 원인을 담아 중단한다."""
     query = {
@@ -37,7 +55,7 @@ def call_data_go_kr(base: str, operation: str, key_name: str, **params) -> dict:
         "_type": "json",
         **params,
     }
-    res = requests.get(f"{base}/{operation}", params=query, timeout=30)
+    res = http_get(f"{base}/{operation}", query, operation)
     try:
         data = res.json()
     except ValueError:
@@ -87,11 +105,10 @@ def find_latest_visitor_date(start_back: int = 20, max_back: int = 70) -> date:
 
 
 def sgis_token() -> str:
-    res = requests.get(f"{SGIS_URL}/auth/authentication.json", timeout=30, params={
+    data = http_get(f"{SGIS_URL}/auth/authentication.json", {
         "consumer_key": env("SGIS_SERVICE_ID"),
         "consumer_secret": env("SGIS_SECRET_KEY"),
-    })
-    data = res.json()
+    }, "SGIS 인증").json()
     if str(data.get("errCd")) != "0":
         raise RuntimeError(f"SGIS 인증 실패: {data.get('errCd')} {data.get('errMsg')}")
     return data["result"]["accessToken"]
