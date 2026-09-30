@@ -60,6 +60,20 @@ CREATE TABLE IF NOT EXISTS attractions (
 CREATE INDEX IF NOT EXISTS attractions_region_idx ON attractions (region_id);
 
 
+-- 보안: Supabase 가 자동으로 여는 REST API(Data API, anon 키)로는 이 표들을 읽고 쓰지 못하게 한다.
+-- 우리 FastAPI 는 postgres 계정(RLS 우회)으로 접속하므로 영향이 없다.
+ALTER TABLE region_master   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE visitor_daily   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE visitor_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attractions     ENABLE ROW LEVEL SECURITY;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN   -- Supabase 에만 있는 역할
+        REVOKE ALL ON region_master, visitor_daily, visitor_summary, attractions FROM anon, authenticated;
+    END IF;
+END $$;
+
+
 -- 시작 지역: 서울 종로구 1곳 (코드는 샘플 호출로 확인한 뒤 필요하면 고친다)
 INSERT INTO region_master (sido_nm, signgu_nm, datalab_code, ldong_regn_cd, ldong_signgu_cd, sgis_code)
 VALUES ('서울특별시', '종로구', '11110', '11', '110', '11010')
