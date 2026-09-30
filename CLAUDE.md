@@ -8,6 +8,9 @@
   - 공유 내용: 진행하고 싶은 주제, 해결하려는 문제, 구현하고 싶은 주요 기능, 현재 아이디어와 방향
   - 발표 전까지 팀별 페이지 제작 (= docs/ 팀 페이지)
 - 8주차: 팀별 프로젝트 발표
+  - 강의계획서: **발표는 별도 슬라이드 없이 팀 프로젝트 페이지에 통합 정리해 진행**한다. 아래 링크 3개·문서 2개·필수 내용도 결국 docs/ 팀 페이지에 들어가야 한다.
+  - 강의계획서: 매주 수업 마지막 팀 시간에 실습 기록을 쓰고, 그 주에 확정한 항목을 팀 페이지에 반영한다.
+- 주차별 수업: 6주차 공공 Open API(인증키·Pagination·파싱·저장 수집기), 7주차 OpenSearch 검색과 AWS
 
 ### 개발 환경과 배포 (수업에서 배운 환경 사용)
 - 프론트엔드: React 기본 (HTML·CSS·JavaScript 직접 구현도 가능) → Vercel
@@ -96,6 +99,9 @@
 - TourAPI가 법정동 코드 체계로 이관되어 기존 areaCode/sigunguCode가 빈 콘텐츠가 많다 (강원 표본 64%, 제주 58.6% 누락 사례). 호출은 resultCode=0000으로 정상 응답해 조용히 누락된다. 반드시 lDongRegnCd / lDongSignguCd로 조회할 것.
 - SGIS 코드와 행안부·법정동 코드가 다르다 (예: 대전 서구 SGIS sgg_cd 25030, 법정동 30170). 관광빅데이터의 269개 시군구에는 일반구가 포함된 것으로 보여, 경계 파일 단위(예: 수원시 vs 장안구)도 맞춰야 한다. region_master가 핵심 작업이다.
 - SGIS 경계 좌표가 UTM-K(EPSG:5179)로 올 가능성이 높다. Leaflet은 WGS84(EPSG:4326) 전제이므로 샘플 호출로 확인 후, 정적 파일 저장 시 geopandas to_crs(4326)로 변환하고 도형을 단순화해 용량을 줄일 것.
+- 공공데이터포털 개발계정은 API마다 하루 1,000건 제한. 인증키는 계정당 하나라 관광빅데이터·TourAPI에 같은 키를 쓴다.
+- SGIS API 도메인은 sgisapi.mods.go.kr (옛 sgisapi.kostat.go.kr 은 302 리다이렉트). 경계 응답 좌표계는 문서상 UTM-K(EPSG:5179).
+- Render → Supabase 연결은 Session pooler 주소를 쓴다 (직접 연결 주소는 IPv6 전용).
 - Render·Supabase 무료 플랜은 미사용 시 잠들거나 일시정지될 수 있다. 발표 직전 /health 호출로 깨워둘 것.
 - Ghost Index는 절대 방문량 백분위라 인구·면적이 작은 군이 구조적으로 상위에 온다. "관광 가치 평가가 아닌 탐색용 지표"로 설명할 것.
 - 확인 필요: 숨은 지역 후보 기준은 "방문량 하위 20%"인데 테마 탐색 목업 필터는 "하위 30%". 이강훈 님과 통일 필요.
@@ -129,13 +135,19 @@
 ## 7. 저장소 구조와 팀 페이지 (docs/index.html)
 ```
 hidden-travel-map/
-  README.md        팀용 수정·배포 안내
-  .gitignore       .env, __pycache__, .venv, node_modules 등
+  README.md        팀용 수정·배포·개발 시작 안내
+  .gitignore       .env, __pycache__, .venv, node_modules, collector/data/raw/ 등
+  .env.example     필요한 키 목록 (DATA_LAB_KEY, TOUR_API_KEY, SGIS_SERVICE_ID, SGIS_SECRET_KEY, DATABASE_URL)
+  render.yaml      Render Blueprint (rootDir: backend)
+  db/schema.sql    테이블 4개 + 종로구 시드. 여러 번 실행해도 안전
+  collector/       common.py(호출·페이지네이션·DB), sample_calls.py, visitors.py, attractions.py
+  backend/app/     FastAPI (main.py, db.py, models.py, routers/regions.py)
   docs/            팀 페이지 (GitHub Pages: main 브랜치 /docs)
     index.html
     images/        mockup-01-map.webp, mockup-02-detail.webp, mockup-03-theme.webp (기획안 목업 3장)
 ```
-- 앞으로 서비스 코드는 collector/, backend/, frontend/ 폴더로 추가한다.
+- 수집기는 region_master 에 등록된 지역만 저장한다. 전국 확대 = region_master 매핑을 채우는 일.
+- 화면(frontend/, React·Leaflet)은 7주차에 추가한다.
 - docs/index.html은 빌드 도구 없는 단일 HTML (CSS·JS 인라인). 폰트는 Google Fonts의 Hahmlet(제목), IBM Plex Sans KR(본문)
 - 디자인 토큰: 배경 #EDF0EA, 패널 #FAFBF8, 글자 #15291F, 보조 #53655A, 숲색 #2F5E4A, 강조(등불) #EBAE45, 지도 단계 --l0~--l5. 다크 모드 지원(prefers-color-scheme + data-theme)
 - 구성 순서: 헤더(브랜드, "KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조", 앵커 메뉴) → 히어로(제목 "사람들이 덜 가는 곳에서 새로운 여행을 발견합니다", 부제, 육각 타일 예시 지도, 후보 5곳 칩, 선택 지역 카드) → #idea 아이디어 → #how 사용 흐름 4단계 → #screens 목업 3장(클릭 시 라이트박스) → #data 흐름도·데이터 3종·Ghost Index·API 표 → #team 5명 이름만 → #plan 일정·발표에서 보여줄 것·제외 범위 → 푸터(데이터 출처)
