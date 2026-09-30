@@ -64,7 +64,7 @@
         <ul>
           <li>2025년 시군구 경계 252개를 받아 지도용 파일로 변환</li>
           <li>코드 체계가 달라 시도와 이름으로 연결 (249개 연결)</li>
-          <li>2026년 개편으로 새로 생긴 인천 4개 구는 아직 경계가 없습니다</li>
+          <li>2026년 개편으로 새로 생긴 인천 4개 구는 옛 구의 읍면동 경계를 합쳐 만들었습니다</li>
         </ul>
         <a href="https://sgis.mods.go.kr/developer/html/openApi/api/data.html">sgis.mods.go.kr 개발지원센터</a>
       </article>
@@ -90,7 +90,7 @@
     <p class="desc" id="dist-desc">점 하나가 시군구 하나입니다.</p>
     <div class="card">
       <div class="legend" aria-hidden="true">
-        <span><i class="dot" style="background:var(--series-for)"></i>숨은 지역 후보 (하위 20%, 사진 3곳 이상)</span>
+        <span><i class="dot" style="background:var(--series-for)"></i><span id="dist-legend">숨은 지역 후보</span></span>
         <span><i class="dot" style="background:var(--series-dim)"></i>그 밖의 시군구</span>
       </div>
       <div class="chart" id="chart-dist" role="img" aria-label="시군구 일평균 방문량 분포 점 그래프"></div>
@@ -188,7 +188,8 @@ const SIDO_SHORT = {
 };
 const sidoLabel = (name, W) => W < NARROW ? (SIDO_SHORT[name] || name) : name;
 
-function isCandidate(r) { return r.percentile <= 20 && r.attraction_count >= 3; }
+// 후보 여부와 기준값은 API 가 정한다 (backend/app/rules.py)
+const isCandidate = r => r.is_candidate;
 
 /* 1) 관광객 구성: 100% 누적 가로 막대 */
 function drawMix() {
@@ -264,13 +265,10 @@ function drawDist() {
     text(svg, tx, base + 18, `${people(t)}명`, { "text-anchor": "middle", class: "tick" });
   }
   const o = data.overview;
-  // 두 경계가 가까워서 20% 라벨은 선 왼쪽, 30% 라벨은 선 오른쪽에 붙인다
-  for (const [v, label, side] of [[o.threshold_p20, "하위 20%", "end"], [o.threshold_p30, "하위 30%", "start"]]) {
-    const tx = x(v);
-    el("line", { x1: tx, x2: tx, y1: 14, y2: base, stroke: "var(--muted)", "stroke-width": 1 }, svg);
-    text(svg, side === "end" ? tx - 4 : tx + 4, 24, `${label} ${people(v)}명`,
-      { class: "strong", style: "font-size:12px", "text-anchor": side });
-  }
+  const tx = x(o.threshold_hidden);
+  el("line", { x1: tx, x2: tx, y1: 14, y2: base, stroke: "var(--muted)", "stroke-width": 1 }, svg);
+  text(svg, tx + 4, 24, `숨은 지역 기준: 하위 ${o.hidden_max_percentile}% (${people(o.threshold_hidden)}명)`,
+    { class: "strong", style: "font-size:12px" });
   const pts = [];
   const layers = [el("g", {}, svg), el("g", {}, svg)];   // 후보를 위에 그린다
   for (const [c, regs] of cols) {
@@ -364,10 +362,11 @@ function explain(code) {
     const w = document.createElement("div"); w.className = "why"; w.textContent = why;
     d.append(c, w); li.appendChild(d); ol.appendChild(li);
   }
-  const low = r.percentile <= 20, enough = r.attraction_count >= 3;
+  const hp = o.hidden_max_percentile, ha = o.hidden_min_attractions;
+  const low = r.percentile <= hp, enough = r.attraction_count >= ha;
   const v = $("ghost-verdict");
-  v.className = `verdict${low && enough ? "" : " no"}`;
-  v.textContent = `숨은 지역 후보 조건: 방문량 하위 20% 이내 (${low ? "충족" : "미충족"}, 하위 ${num(r.percentile, 1)}%) 그리고 사진 있는 관광지 3곳 이상 (${enough ? "충족" : "미충족"}, ${num(r.attraction_count)}곳) → ${low && enough ? "후보입니다" : "후보가 아닙니다"}`;
+  v.className = `verdict${r.is_candidate ? "" : " no"}`;
+  v.textContent = `숨은 지역 후보 조건: 방문량 하위 ${hp}% 이내 (${low ? "충족" : "미충족"}, 하위 ${num(r.percentile, 1)}%) 그리고 사진 있는 관광지 ${ha}곳 이상 (${enough ? "충족" : "미충족"}, ${num(r.attraction_count)}곳) → ${r.is_candidate ? "후보입니다" : "후보가 아닙니다"}`;
 }
 
 function setupGhost() {
@@ -383,10 +382,10 @@ function setupGhost() {
   const o = data.overview;
   const caveats = [
     "관광지의 가치를 평가하는 점수가 아니라, 덜 알려진 곳을 찾기 위한 탐색용 지표입니다.",
-    `절대 방문량의 순위라서 인구와 면적이 작은 군이 구조적으로 위에 옵니다. 하위 20% 후보 ${o.hidden_p20}곳 중 ${o.hidden_p20_gun}곳이 군입니다.`,
+    `절대 방문량의 순위라서 인구와 면적이 작은 군이 구조적으로 위에 옵니다. 숨은 지역 후보 ${o.hidden_count}곳 중 ${o.hidden_gun_count}곳이 군입니다.`,
     `공개 지연이 약 한 달이라 "최근 30일"이 아니라 "최신 공개 기준 30일"(기준일 ${fmtDate(o.window_end)})입니다.`,
     "방문자 수는 날짜별 순방문자 기준이라 2박 3일 머물면 3명으로 셉니다. 광역 단위 통계와는 집계 기준이 달라 더할 수 없습니다.",
-    `후보 기준을 하위 30%로 넓히면 ${o.hidden_p30}곳이 됩니다 (지금 기준 20%는 ${o.hidden_p20}곳).`,
+    `후보 기준은 하위 ${o.hidden_max_percentile}%로 정했습니다 (${o.hidden_count}곳). 기획안 본문처럼 20%로 좁히면 ${o.hidden_p20}곳입니다.`,
   ];
   const ul = $("caveats"); ul.textContent = "";
   for (const c of caveats) { const li = document.createElement("li"); li.textContent = c; ul.appendChild(li); }
@@ -399,14 +398,15 @@ function fillText() {
   kpi(k, "집계 기간", `${o.days}일`, `${short(o.window_start)}~${short(o.window_end)}, 최신 공개 기준`);
   kpi(k, "방문자 기록", `${num(o.visitor_rows)}행`, "시군구 × 날짜 × 관광객 구분");
   kpi(k, "사진 있는 관광지", `${num(o.attraction_count)}곳`, "관광지·문화시설·레포츠");
-  kpi(k, "숨은 지역 후보", `${o.hidden_p20}곳`, `하위 20%·사진 3곳 이상 (30%면 ${o.hidden_p30}곳)`);
+  kpi(k, "숨은 지역 후보", `${o.hidden_count}곳`, `방문 하위 ${o.hidden_max_percentile}%·사진 ${o.hidden_min_attractions}곳 이상`);
+  $("dist-legend").textContent = `숨은 지역 후보 (하위 ${o.hidden_max_percentile}%, 사진 ${o.hidden_min_attractions}곳 이상)`;
   $("src-visitors").textContent = `${fmtDate(o.window_start)}~${fmtDate(o.window_end)} 30일, ${num(o.visitor_rows)}행 저장`;
   $("src-attractions").textContent = `${num(o.attraction_count)}곳의 이름, 주소, 좌표, 사진, 사진 저작권 유형`;
   const lo = o.local_share_lowest[0], hi = o.local_share_highest[0];
   $("mix-desc").textContent = `전국 방문자의 ${num(mix[1].share, 1)}%는 현지인, ${num(mix[2].share, 1)}%는 외지인, ${num(mix[3].share, 1)}%는 외국인입니다. 현지인 비중은 ${lo.sido_nm} ${lo.signgu_nm} ${num(lo.local_share, 1)}%부터 ${hi.sido_nm} ${hi.signgu_nm} ${num(hi.local_share, 1)}%까지 크게 달라서, 주민이 많이 사는 곳일수록 방문량이 부풀려집니다. 그래서 외지인과 외국인만 더해 방문량으로 씁니다.`;
   const sorted = [...data.regions].sort((a, b) => a.avg_daily_visitors - b.avg_daily_visitors);
   const minR = sorted[0], maxR = sorted[sorted.length - 1];
-  $("dist-desc").textContent = `점 하나가 시군구 하나입니다. 하루 평균 외지인·외국인 방문은 ${minR.signgu_nm} ${num(minR.avg_daily_visitors)}명부터 ${maxR.signgu_nm} ${num(maxR.avg_daily_visitors)}명까지 약 ${Math.round(maxR.avg_daily_visitors / minR.avg_daily_visitors)}배 차이 나고, 중앙값은 ${num(o.median_daily_visitors)}명입니다. 하위 20% 경계는 하루 ${num(o.threshold_p20)}명입니다.`;
+  $("dist-desc").textContent = `점 하나가 시군구 하나입니다. 하루 평균 외지인·외국인 방문은 ${minR.signgu_nm} ${num(minR.avg_daily_visitors)}명부터 ${maxR.signgu_nm} ${num(maxR.avg_daily_visitors)}명까지 약 ${Math.round(maxR.avg_daily_visitors / minR.avg_daily_visitors)}배 차이 나고, 중앙값은 ${num(o.median_daily_visitors)}명입니다. 숨은 지역 기준인 하위 ${o.hidden_max_percentile}% 경계는 하루 ${num(o.threshold_hidden)}명입니다.`;
   const top3 = [...data.sido].sort((a, b) => b.hidden_count - a.hidden_count).slice(0, 3);
   const zero = data.sido.filter(s => s.hidden_count === 0).map(s => s.sido_nm.replace(/(특별자치시|특별자치도|특별시|광역시)$/, ""));
   $("sido-desc").textContent = `숨은 지역 후보는 ${top3.map(s => `${s.sido_nm} ${s.hidden_count}곳`).join(", ")} 순으로 많고, ${zero.join("·")}에는 없습니다. 막대는 시군구 일평균 방문량의 중앙값입니다.`;

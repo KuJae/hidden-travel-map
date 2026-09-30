@@ -12,16 +12,45 @@
       integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="stylesheet" href="style.css">
 <style>
+/* 지도 페이지는 지도를 크게 보여 주려고 다른 페이지보다 넓게 쓴다 */
+.wrap.wide{max-width:1320px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.toolbar .status{margin:0}
 .layout{display:grid;gap:18px;padding-bottom:24px}
-@media (min-width:960px){.layout{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}}
+@media (min-width:960px){.layout{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:start}}
 .map-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative}
-#map{height:min(74vh,720px);min-height:420px;border-radius:16px;background:var(--panel)}
+#map{height:min(76vh,740px);min-height:440px;border-radius:16px;background:var(--panel)}
 .leaflet-container{background:var(--panel);font-family:var(--sans)}
 .leaflet-tooltip{font-family:var(--sans);font-size:13px;border-radius:8px}
 .map-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:.82rem;color:var(--muted);padding:10px 8px 4px}
 .ramp{display:inline-flex;gap:2px;vertical-align:middle}
 .ramp i{width:18px;height:10px;border-radius:3px;display:inline-block}
-.side{display:grid;gap:14px}
+
+/* 지도 위에 떠 있는 숨은 지역 후보 패널 (후보는 고정 목록이라 항상 보이게) */
+.float{position:absolute;top:22px;left:22px;z-index:500;width:min(240px,calc(100% - 44px));max-height:calc(100% - 92px);
+  display:flex;flex-direction:column;overflow:hidden;background:var(--panel);
+  background:color-mix(in srgb,var(--panel) 88%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(21,41,31,.16)}
+.float-toggle{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:48px;padding:10px 14px;cursor:pointer}
+.float-toggle:focus-visible{outline:2px solid var(--forest);outline-offset:-3px;border-radius:14px}
+.float-title{font-family:var(--serif);font-weight:700;font-size:1.02rem;display:flex;align-items:center;gap:8px}
+.float-title i{width:10px;height:10px;border-radius:50%;background:var(--lantern);display:inline-block}
+.count{font-family:var(--sans);font-size:.76rem;font-weight:600;color:var(--lantern-ink);background:var(--lantern-tint);padding:2px 8px;border-radius:999px}
+.float-toggle svg{width:16px;height:16px;flex:none;color:var(--muted);transition:transform .2s}
+.float[data-open="false"] .float-toggle svg{transform:rotate(-90deg)}
+.float[data-open="false"] .float-body{display:none}
+.float-body{display:flex;flex-direction:column;min-height:0;border-top:1px solid var(--line)}
+.float-rule{font-size:.78rem;color:var(--muted);padding:8px 14px 4px;line-height:1.5}
+.float-list{list-style:none;margin:0;padding:2px 6px 8px;overflow-y:auto;min-height:0;overscroll-behavior:contain}
+.float-list button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:8px;width:100%;min-height:40px;padding:6px 8px;border-radius:10px;cursor:pointer;font-size:.9rem}
+.float-list button:hover{background:var(--bg)}
+.float-list button[aria-pressed="true"]{background:var(--lantern-tint)}
+.float-list button:focus-visible{outline:2px solid var(--forest);outline-offset:-2px}
+.float-list .n{font-size:.74rem;color:var(--faint);font-variant-numeric:tabular-nums;text-align:right}
+.float-list small{color:var(--muted);font-size:.76rem;margin-left:5px}
+.float-list .g{font-size:.84rem;font-weight:600;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){.float-toggle svg{transition:none}}
+
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 22px}
 .panel h2{font-size:1.45rem}
 .badge{display:inline-block;font-size:.78rem;font-weight:600;color:var(--lantern-ink);background:var(--lantern-tint);padding:3px 10px;border-radius:999px;margin-left:8px;vertical-align:middle}
@@ -39,16 +68,12 @@
 .photo figcaption{padding:8px 10px;font-size:.82rem;line-height:1.4}
 .photo figcaption b{display:block;font-size:.88rem}
 .photo figcaption span{color:var(--muted)}
-.cands{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
-.cands button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid transparent;border-radius:10px;padding:8px 12px;cursor:pointer;min-height:44px;text-align:left}
-.cands button:hover,.cands button[aria-pressed="true"]{border-color:var(--forest)}
-.cands .g{font-weight:600;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted);font-size:.86rem}
 </style>
 </head>
 <body>
 
-<header class="top wrap">
+<header class="top wrap wide">
   <a class="brand" href="index.html">
     <svg viewBox="0 0 36 36" aria-hidden="true"><polygon points="18,2.5 31.5,10.25 31.5,25.75 18,33.5 4.5,25.75 4.5,10.25" style="fill:var(--forest)"/><circle cx="23" cy="14" r="4.2" style="fill:var(--lantern)"/></svg>
     숨은여행지도
@@ -61,11 +86,30 @@
   </nav>
 </header>
 
-<main class="wrap">
-  <p class="status" id="status" role="status" style="margin:0 0 10px">지도를 불러오는 중입니다.</p>
+<main class="wrap wide">
+  <div class="toolbar">
+    <p class="status" id="status" role="status">지도를 불러오는 중입니다.</p>
+    <div class="pick-row">
+      <label for="pick" class="muted">지역 찾기</label>
+      <select id="pick"><option value="">전국 230곳에서 고르기</option></select>
+    </div>
+  </div>
+
   <div class="layout">
     <div class="map-card">
       <div id="map" aria-label="전국 시군구 방문량 지도"></div>
+
+      <aside class="float" id="float" data-open="true" aria-label="숨은 지역 후보">
+        <button type="button" class="float-toggle" id="float-toggle" aria-expanded="true" aria-controls="float-body">
+          <span class="float-title"><i aria-hidden="true"></i>숨은 지역 후보 <span class="count" id="cand-count">…</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/></svg>
+        </button>
+        <div class="float-body" id="float-body">
+          <p class="float-rule" id="cand-rule">방문이 적고 볼거리가 있는 곳</p>
+          <ol class="float-list" id="cands"></ol>
+        </div>
+      </aside>
+
       <div class="map-legend" aria-hidden="true">
         <span>방문 적음</span>
         <span class="ramp"><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i><i style="background:var(--l4)"></i><i style="background:var(--l5)"></i></span>
@@ -74,25 +118,14 @@
       </div>
     </div>
 
-    <div class="side">
-      <section class="panel" id="detail" aria-live="polite">
-        <h2>사람들이 덜 가는 곳을 찾아보세요</h2>
-        <p class="muted" style="margin-top:8px">지도에서 연하게 칠해진 곳일수록 방문이 적습니다. 지역을 누르면 방문량과 관광지 사진이 나옵니다.</p>
-      </section>
-      <section class="panel">
-        <h2 style="font-size:1.15rem">숨은 지역 후보</h2>
-        <p class="muted" id="cand-desc">방문량 하위 20% 이면서 사진 있는 관광지가 3곳 이상인 곳</p>
-        <ul class="cands" id="cands"></ul>
-        <div class="pick-row" style="margin-top:14px">
-          <label for="pick" class="muted">다른 지역 고르기</label>
-          <select id="pick"><option value="">지역 선택</option></select>
-        </div>
-      </section>
-    </div>
+    <section class="panel" id="detail" aria-live="polite">
+      <h2>사람들이 덜 가는 곳을 찾아보세요</h2>
+      <p class="muted" style="margin-top:8px">지도에서 연하게 칠해진 곳일수록 방문이 적습니다. 지도를 누르거나 왼쪽 위 숨은 지역 후보 목록에서 고르면 방문량과 관광지 사진이 나옵니다.</p>
+    </section>
   </div>
 </main>
 
-<footer class="foot wrap">
+<footer class="foot wrap wide">
   <div class="inner">
     <p>방문량: 한국관광공사 빅데이터 지역별 방문자수 (외지인+외국인, 최신 공개 기준 30일) · 관광지와 사진: 한국관광공사 TourAPI · 경계: 국가데이터처 SGIS (2025, 인천 신설 구는 읍면동 경계를 합쳐 만듦)</p>
     <p>Ghost Index 는 팀이 정의한 탐색용 지표입니다. 계산 방법은 <a href="analysis.html#ghost">데이터 분석</a>에 있습니다.</p>
@@ -109,9 +142,17 @@ const $ = id => document.getElementById(id);
 const status = $("status");
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const short = d => { const [, m, dd] = d.split("-"); return `${+m}/${+dd}`; };
-const isCandidate = r => r && r.percentile <= 20 && r.attraction_count >= 3;
+const isCandidate = r => Boolean(r && r.is_candidate);   // 후보 기준은 API 가 정한다 (backend/app/rules.py)
 const ghost = v => (Number.isInteger(v) ? String(v) : v.toFixed(1));   // 99.6 이 100 으로 반올림돼 보이지 않게
-const KOREA = [[33.1, 124.6], [38.65, 131.0]];   // 제주·울릉도까지 (독도까지 넣으면 본토가 너무 작아진다)
+const SIDO_SHORT = {
+  "서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천", "대전광역시": "대전",
+  "울산광역시": "울산", "세종특별자치시": "세종", "경기도": "경기", "강원특별자치도": "강원", "충청북도": "충북",
+  "충청남도": "충남", "전북특별자치도": "전북", "전남광주통합특별시": "전남광주", "경상북도": "경북",
+  "경상남도": "경남", "제주특별자치도": "제주",
+};
+const KOREA = [[33.1, 124.6], [38.65, 131.0]];      // 제주·울릉도까지
+const MAINLAND = [[33.1, 126.0], [38.65, 131.0]];   // 서해 섬 쪽은 떠 있는 패널이 덮도록
+const wide = matchMedia("(min-width: 720px)");
 let regions = new Map(), layer, map, selected = null;
 
 // 방문량 백분위 5단계(연함 → 진함), 숨은 지역 후보는 등불색
@@ -131,14 +172,39 @@ function el(tag, cls, textValue) {
   return n;
 }
 
+// 떠 있는 패널이 펼쳐져 있으면 그 오른쪽 빈 곳에 맞춘다
+function panelEdge() {
+  const panel = $("float");
+  return wide.matches && panel.dataset.open === "true" ? panel.offsetLeft + panel.offsetWidth : 0;
+}
+function fitKorea() {
+  const edge = panelEdge();
+  if (edge) map.fitBounds(MAINLAND, { paddingTopLeft: [edge + 8, 12], paddingBottomRight: [12, 12] });
+  else map.fitBounds(KOREA, { padding: [10, 10] });
+}
+function fitRegion(bounds) {
+  map.fitBounds(bounds, { maxZoom: 8, paddingTopLeft: [panelEdge() + 40, 40], paddingBottomRight: [40, 40] });
+}
+
+function setOpen(open) {
+  $("float").dataset.open = String(open);
+  $("float-toggle").setAttribute("aria-expanded", String(open));
+}
+
 async function select(code, { zoom = false } = {}) {
   const r = regions.get(code);
   if (!r) return;
   selected = code;
   if (location.hash !== `#${code}`) history.replaceState(null, "", `#${code}`);
   layer.setStyle(styleFor);
-  layer.eachLayer(l => { if (l.feature.properties.code === code) { l.bringToFront(); if (zoom) map.fitBounds(l.getBounds(), { maxZoom: 8, padding: [40, 40] }); } });
-  for (const b of $("cands").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.code === code));
+  if (!wide.matches) setOpen(false);   // 휴대폰: 목록을 접어 지도를 보이게
+  layer.eachLayer(l => { if (l.feature.properties.code === code) { l.bringToFront(); if (zoom) fitRegion(l.getBounds()); } });
+  const list = $("cands");
+  for (const b of list.querySelectorAll("button")) {
+    const on = b.dataset.code === code;
+    b.setAttribute("aria-pressed", String(on));
+    if (on) list.scrollTop = b.offsetTop - list.clientHeight / 2 + b.offsetHeight / 2;   // 페이지는 그대로, 목록 안에서만 스크롤
+  }
   $("pick").value = code;
 
   const d = $("detail");
@@ -159,12 +225,14 @@ async function select(code, { zoom = false } = {}) {
   const photos = el("div", "photos");
   photos.appendChild(el("p", "muted", "관광지 사진을 불러오는 중입니다."));
   d.append(h, g, facts, photos);
+  // 휴대폰에서는 상세가 지도 아래에 있어서, 고르면 그쪽으로 내려 준다
+  if (!wide.matches) d.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
 
   try {
-    const list = await getJSON(`/regions/${code}/attractions?limit=6`);
+    const items = await getJSON(`/regions/${code}/attractions?limit=6`);
     if (selected !== code) return;   // 그사이 다른 지역을 눌렀으면 버린다
     photos.textContent = "";
-    for (const a of list) {
+    for (const a of items) {
       const fig = el("figure", "photo");
       const img = el("img"); img.src = a.image_url; img.alt = a.title; img.loading = "lazy"; img.referrerPolicy = "no-referrer";
       const cap = el("figcaption");
@@ -178,14 +246,34 @@ async function select(code, { zoom = false } = {}) {
   }
 }
 
+function fillCandidates(hidden, rule) {
+  $("cand-count").textContent = `${hidden.length}곳`;
+  if (rule) $("cand-rule").textContent = `방문량 하위 ${rule.hidden_max_percentile}% 이면서 사진 있는 관광지 ${rule.hidden_min_attractions}곳 이상. 방문이 적은 순입니다.`;
+  const ol = $("cands");
+  ol.textContent = "";
+  hidden.forEach((r, i) => {
+    const li = el("li"), b = el("button");
+    b.type = "button"; b.dataset.code = r.code; b.setAttribute("aria-pressed", String(r.code === selected));
+    const name = el("span", null, r.signgu_nm);
+    name.appendChild(el("small", null, SIDO_SHORT[r.sido_nm] || r.sido_nm));
+    b.append(el("span", "n", String(i + 1)), name, el("span", "g", ghost(r.ghost_index)));
+    b.title = `${r.sido_nm} ${r.signgu_nm} · Ghost Index ${ghost(r.ghost_index)}`;
+    b.addEventListener("click", () => select(r.code, { zoom: true }));
+    li.appendChild(b); ol.appendChild(li);
+  });
+}
+
 async function main() {
   const slow = () => { status.textContent = "서버를 깨우는 중입니다. 무료 서버라 처음 한 번은 1분 가까이 걸릴 수 있습니다."; };
+  setOpen(wide.matches);   // 휴대폰에서는 접은 채로 시작
+  $("float-toggle").addEventListener("click", () => setOpen($("float").dataset.open !== "true"));
   try {
     const [geo, list, hidden] = await Promise.all([
-      fetch("data/sigungu.geojson").then(r => r.json()), getJSON("/regions", slow), getJSON("/hidden?limit=12", slow)]);
+      fetch("data/sigungu.geojson").then(r => r.json()), getJSON("/regions", slow), getJSON("/hidden?limit=230", slow)]);
     regions = new Map(list.map(r => [r.code, r]));
 
-    map = L.map("map", { zoomSnap: 0.25, minZoom: 6, maxZoom: 11, attributionControl: true });
+    map = L.map("map", { zoomSnap: 0.25, minZoom: 5, maxZoom: 11, zoomControl: false });
+    L.control.zoom({ position: "topright" }).addTo(map);   // 왼쪽 위는 떠 있는 패널 자리
     map.attributionControl.setPrefix(false).addAttribution("경계: 국가데이터처 SGIS");
     layer = L.geoJSON(geo, {
       style: styleFor,
@@ -197,24 +285,19 @@ async function main() {
         l.on("click", () => select(f.properties.code));
       },
     }).addTo(map);
-    map.fitBounds(KOREA);
+    fitKorea();
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => layer.setStyle(styleFor));
 
-    const ul = $("cands");
-    $("cand-desc").textContent = `방문량 하위 20% 이면서 사진 있는 관광지가 3곳 이상인 ${list.filter(isCandidate).length}곳 중 방문이 가장 적은 ${hidden.length}곳`;
-    for (const r of hidden) {
-      const li = el("li"), b = el("button");
-      b.type = "button"; b.dataset.code = r.code; b.setAttribute("aria-pressed", "false");
-      b.append(el("span", null, `${r.sido_nm} ${r.signgu_nm}`), el("span", "g", `Ghost ${ghost(r.ghost_index)}`));
-      b.addEventListener("click", () => select(r.code, { zoom: true }));
-      li.appendChild(b); ul.appendChild(li);
-    }
+    fillCandidates(hidden);
+    getJSON("/stats/overview").then(o => fillCandidates(hidden, o)).catch(() => {});   // 기준 문구는 나중에 채운다
+
     const pick = $("pick");
     for (const r of [...list].sort((a, b) => (a.sido_nm + a.signgu_nm).localeCompare(b.sido_nm + b.signgu_nm, "ko"))) {
       const o = el("option", null, `${r.sido_nm} ${r.signgu_nm}`); o.value = r.code; pick.appendChild(o);
     }
     pick.addEventListener("change", () => pick.value && select(pick.value, { zoom: true }));
     status.textContent = `최신 공개 기준 30일 (${short(list[0].window_start)}~${short(list[0].window_end)}) 외지인·외국인 방문량입니다.`;
+
     // 주소 뒤에 #47760 처럼 지역 코드를 붙이면 그 지역을 선택한 채로 연다 (발표 데모용 링크)
     const fromHash = () => { const c = location.hash.slice(1); if (regions.has(c)) select(c, { zoom: true }); };
     addEventListener("hashchange", fromHash);
