@@ -23,6 +23,54 @@ class RegionSummary(BaseModel):
     attraction_count: int = Field(description="사진 있는 관광지 수")
 
 
+class VisitorMix(BaseModel):
+    visitor_type: int = Field(description="1 현지인, 2 외지인, 3 외국인")
+    label: str
+    daily_avg: float = Field(description="시 단위 전체 합의 일평균")
+    share: float = Field(description="비중 (%)")
+
+
+class RegionShare(BaseModel):
+    sido_nm: str
+    signgu_nm: str
+    local_share: float = Field(description="현지인 비중 (%)")
+
+
+class StatsOverview(BaseModel):
+    window_start: date
+    window_end: date = Field(description="집계 기준일 (최신 공개일)")
+    days: int
+    region_count: int = Field(description="시 단위 지역 수")
+    subregion_count: int = Field(description="상위 시로 모은 일반구 수")
+    attraction_count: int = Field(description="사진 있는 관광지 수")
+    visitor_rows: int = Field(description="visitor_daily 저장 행 수")
+    visitor_mix: list[VisitorMix]
+    local_share_lowest: list[RegionShare] = Field(description="현지인 비중이 가장 낮은 곳")
+    local_share_highest: list[RegionShare] = Field(description="현지인 비중이 가장 높은 곳")
+    median_daily_visitors: float
+    threshold_p20: float = Field(description="방문량 하위 20% 경계 (외지인+외국인 일평균)")
+    threshold_p30: float = Field(description="방문량 하위 30% 경계")
+    hidden_p20: int = Field(description="하위 20% 이면서 사진 있는 관광지 3곳 이상인 지역 수")
+    hidden_p30: int = Field(description="하위 30% 이면서 사진 있는 관광지 3곳 이상인 지역 수")
+    hidden_p20_gun: int = Field(description="hidden_p20 중 이름이 '군'으로 끝나는 지역 수")
+    corr_log_attractions_visitors: float = Field(
+        description="ln(사진 있는 관광지 수) 와 ln(일평균 방문량) 의 피어슨 상관계수. 0 에 가까우면 볼거리와 방문량이 무관")
+    median_attractions_bottom20: float = Field(description="방문량 하위 20% 지역의 사진 있는 관광지 수 중앙값")
+    median_attractions_all: float
+    median_attractions_top20: float = Field(description="방문량 상위 20% 지역의 사진 있는 관광지 수 중앙값")
+
+
+class SidoStats(BaseModel):
+    sido_nm: str
+    region_count: int
+    median_daily_visitors: float = Field(description="시군구 일평균(외지인+외국인)의 중앙값")
+    local_share: float = Field(description="현지인 비중 (%)")
+    outsider_share: float = Field(description="외지인 비중 (%)")
+    foreigner_share: float = Field(description="외국인 비중 (%)")
+    hidden_count: int = Field(description="숨은 지역 후보 수 (하위 20%, 사진 3곳 이상)")
+    attraction_count: int
+
+
 class Attraction(BaseModel):
     content_id: str = Field(description="TourAPI contentid")
     title: str
