@@ -62,13 +62,17 @@
 .facts dt{font-size:.78rem;color:var(--muted)}
 .facts dd{margin:0;font-weight:600}
 .photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
-.photo{margin:0;background:var(--bg);border-radius:12px;overflow:hidden}
+.photo{display:block;text-decoration:none;background:var(--bg);border:1px solid transparent;border-radius:12px;overflow:hidden}
+.photo:hover{border-color:var(--forest)}
+.photo:hover b{text-decoration:underline}
 /* 공공누리 3유형(변경 금지) 사진이 많아 잘라내지 않고 원본 비율 그대로 보여 준다 */
 .photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--line)}
-.photo figcaption{padding:8px 10px;font-size:.82rem;line-height:1.4}
-.photo figcaption b{display:block;font-size:.88rem}
-.photo figcaption span{color:var(--muted)}
+.photo .cap{display:block;padding:8px 10px;font-size:.82rem;line-height:1.4}
+.photo b{display:block;font-size:.88rem}
+.photo b svg{width:.8em;height:.8em;margin-left:4px;vertical-align:-1px;color:var(--muted)}
+.photo .cap span{color:var(--muted)}
 .muted{color:var(--muted);font-size:.86rem}
+.photo-note{margin-top:10px}
 </style>
 </head>
 <body>
@@ -233,17 +237,40 @@ async function select(code, { zoom = false } = {}) {
     if (selected !== code) return;   // 그사이 다른 지역을 눌렀으면 버린다
     photos.textContent = "";
     for (const a of items) {
-      const fig = el("figure", "photo");
-      const img = el("img"); img.src = a.image_url; img.alt = a.title; img.loading = "lazy"; img.referrerPolicy = "no-referrer";
-      const cap = el("figcaption");
-      cap.append(el("b", null, a.title), el("span", null, [a.category, (a.address || "").split(" ").slice(0, 3).join(" ")].filter(Boolean).join(" · ")));
-      fig.append(img, cap); photos.appendChild(fig);
+      const card = el("a", "photo");
+      card.href = naverUrl(a.title, r); card.target = "_blank"; card.rel = "noopener noreferrer";
+      card.setAttribute("aria-label", `${a.title}, 네이버에서 설명 보기 (새 창)`);
+      const img = el("img"); img.src = a.image_url; img.alt = ""; img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+      const cap = el("span", "cap"), name = el("b", null, a.title);
+      name.appendChild(externalIcon());
+      cap.append(name, el("span", null, [a.category, (a.address || "").split(" ").slice(0, 3).join(" ")].filter(Boolean).join(" · ")));
+      card.append(img, cap); photos.appendChild(card);
     }
-    d.appendChild(el("p", "muted", "사진 출처: 한국관광공사 (공공누리)"));
+    d.appendChild(el("p", "muted photo-note", "사진을 누르면 네이버 검색에서 그 관광지 설명을 볼 수 있습니다 (새 창). 사진 출처: 한국관광공사 (공공누리)"));
   } catch (e) {
     photos.textContent = "";
     photos.appendChild(el("p", "muted", `관광지를 불러오지 못했습니다: ${e.message}`));
   }
+}
+
+// 관광지 설명은 네이버 통합검색(지식백과·플레이스)으로 연다. 괄호 속 부가 설명은 검색을 흐려서 빼고,
+// 이름에 지역명이 없으면 시군구를 앞에 붙인다 (중구·서구처럼 흔한 구는 시도까지)
+function naverUrl(title, r) {
+  const base = title.replace(/\s*\([^)]*\)/g, "").trim() || title;
+  const stem = r.signgu_nm.replace(/[시군구]$/, "");
+  const where = stem.length >= 2 ? r.signgu_nm : `${SIDO_SHORT[r.sido_nm] || r.sido_nm} ${r.signgu_nm}`;
+  const q = stem.length >= 2 && base.includes(stem) ? base : `${where} ${base}`;
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
+}
+
+function externalIcon() {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M7 17L17 7M9 7h8v8");
+  path.setAttribute("style", "fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round");
+  svg.appendChild(path);
+  return svg;
 }
 
 function fillCandidates(hidden, rule) {
