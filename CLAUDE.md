@@ -121,7 +121,7 @@
 - Ghost Index는 절대 방문량 백분위라 인구·면적이 작은 군이 구조적으로 상위에 온다. "관광 가치 평가가 아닌 탐색용 지표"로 설명할 것.
 - **결정(2026-09-30, 강재구): 숨은 지역 후보 = 방문량 하위 30% AND 사진 있는 관광지 3곳 이상** (기획안 본문 20% / 목업 30% 중 30%). 후보 69곳(20%였으면 46곳).
   기준값은 backend/app/rules.py 한 곳에만 있고, API 가 지역마다 is_candidate 를 내려 준다. 화면은 이 값만 쓴다.
-  팀 페이지(docs/index.html)의 "하위 20%" 문구는 아직 그대로다 (팀 페이지는 요청 시에만 고친다).
+  팀 페이지(docs/index.html)도 2026-10-04 8주차 개편 때 30% 로 맞췄다.
 
 ## 5. 아키텍처와 백엔드 설계 (기획안 기준)
 - 흐름: 외부 API(관광공사, SGIS) → 수집기(Python) → DB(PostgreSQL/Supabase) → 우리 API(FastAPI) → 화면(React, Leaflet)
@@ -162,7 +162,7 @@ hidden-travel-map/
   backend/app/     FastAPI (main.py, db.py, models.py, routers/regions.py)
   docs/            팀 페이지 (GitHub Pages: main 브랜치 /docs)
     index.html
-    images/        mockup-01-map.webp, mockup-02-detail.webp, mockup-03-theme.webp (기획안 목업 3장)
+    images/        mockup-0*.webp (기획안 목업 3장), service-map·service-analysis·service-swagger.webp, analysis-dist.webp (2026-10-04 서비스 캡처)
 ```
 - 수집기는 region_master 에 등록된 지역만 저장한다. 전국 확대 = region_master 매핑을 채우는 일.
 - region_master (collector/regions.py): 관광빅데이터 269개 전부. 일반구 39개는 parent_region_id 로 상위 시를 가리키고,
@@ -176,8 +176,12 @@ hidden-travel-map/
 - 화면(frontend/, React·Leaflet)은 7주차에 추가한다.
 - docs/index.html은 빌드 도구 없는 단일 HTML (CSS·JS 인라인). 폰트는 Google Fonts의 Hahmlet(제목), IBM Plex Sans KR(본문)
 - 디자인 토큰: 배경 #EDF0EA, 패널 #FAFBF8, 글자 #15291F, 보조 #53655A, 숲색 #2F5E4A, 강조(등불) #EBAE45, 지도 단계 --l0~--l5. 다크 모드 지원(prefers-color-scheme + data-theme)
-- 구성 순서: 헤더(브랜드, "KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조", 앵커 메뉴) → 히어로(제목 "사람들이 덜 가는 곳에서 새로운 여행을 발견합니다", 부제, 육각 타일 예시 지도, 후보 5곳 칩, 선택 지역 카드) → #idea 아이디어 → #how 사용 흐름 4단계 → #screens 목업 3장(클릭 시 라이트박스) → #data 흐름도·데이터 3종·Ghost Index·API 표 → #team 5명 이름만 → #plan 일정·발표에서 보여줄 것·제외 범위 → 푸터(데이터 출처)
-- 지도와 카드 수치는 기획안 목업의 예시 데이터 (JS의 data 객체: 영양군 96/7곳, 양구군 94/11곳, 장수군 92/9곳, 의령군 91/8곳, 괴산군 89/13곳). 페이지에 "예시 데이터"로 표기돼 있다.
+- 구성 순서 (2026-10-04 8주차 발표용 개편, 8주차 필수 6항목 + 링크 3개 + 문서 2개를 모두 담음): 헤더 → 히어로(제목, 링크 3개 Vercel·Swagger·GitHub, 육각 도식 지도, 실제 최하위 5곳 칩, 선택 지역 카드) → #toc 발표 순서 → #idea → #scenario 데이터 활용 시나리오(사용자·문제·해결, 4단계마다 쓰는 데이터·API) → #screens 주요 페이지 및 기능(실제 캡처 3장, 기능 표, 1분 데모 순서, 목업 3장은 접힘) → #arch 서비스 아키텍처(5단 흐름도, 수집·조회·배포 흐름) → #data 사용 데이터 및 출처(4종 카드, region_master 코드 잇기 표, Ghost Index 계산) → #analysis 분석 결과 4가지 → #bm 비즈니스 모델 → #docs(#api API 표·응답 스키마·응답 예시, #db ERD·컬럼) → #lessons 부딪힌 문제와 해결 → #team → #plan 4주 진행·완료 기준 → 푸터(출처 링크·수치 기준일)
+- 히어로 육각 지도는 설명용 도식이고, 칩 5곳(영양·울릉·장수·양구·의령) 카드 수치는 2026-08-02~08-31 실제 값이다 (JS data 객체에 고정. 데이터를 다시 수집하면 함께 고칠 것).
+- 비즈니스 모델 방향(2026-10-04, 강재구): **지자체 협업을 강조한다.** 근거: 숨은 지역 후보 69곳 중 64곳(93%)이 행정안전부 인구감소지역
+  (2021-10 지정 89곳, 5년 단위 재지정 → 명단이 바뀌면 다시 대조). 인구감소지역 89곳 방문 중앙값 29,984명 vs 그 밖 141곳 122,340명.
+  수익: 공동 캠페인(이달의 숨은 여행지), 지자체 방문 리포트 구독, 관광 정보 보강·체류 연결. 원칙: 순위(Ghost Index)는 팔지 않는다.
+  대조 결과는 팀 페이지 JS 의 cand 배열에 고정돼 있다.
 - 팀 결정 사항: 역할 분담과 결과물 설명은 페이지에서 뺐다. 팀원은 이름만 표시한다.
 - claude.ai에서 만든 미리보기 버전이 따로 있지만 Git 수정 사항은 반영되지 않는다. 과제 제출은 GitHub Pages 주소로 한다.
 - 저장소: https://github.com/KuJae/hidden-travel-map (Public, 소유자 KuJae) / 팀 페이지: https://kujae.github.io/hidden-travel-map/
@@ -186,7 +190,8 @@ hidden-travel-map/
   GitHub 연결됨(2026-09-30): main 에 push 하면 Vercel 이 자동 배포한다 (Render 와 같음).
 - 분석 API: /stats/overview, /stats/sido. 분석 결과 핵심: 사진 있는 관광지 수와 방문량의 상관(로그) 0.06 → "볼 것은 있다"의 근거.
 - API: https://hidden-travel-map-api.onrender.com (Swagger /docs). Render 무료·싱가포르·rootDir backend·main push 시 자동 배포. 환경변수 DATABASE_URL 은 Render 대시보드에만 있다.
-- 진행 상태(2026-09-30): 종로구 1곳 End-to-End 완료 — 관광빅데이터 30일·TourAPI 관광지 297곳이 Supabase 에 있고, 배포된 API 가 응답한다. 다음은 6주차 전국 확대(region_master, 시 단위).
+- 진행 상태(2026-10-04): 수집·DB·API·지도·분석 페이지 배포 완료, 팀 페이지를 8주차 발표용으로 개편. 남은 것은 발표 연습(팀원 모두 흐름 설명), 개인 실습 기록.
+  구현하지 않은 것: OpenSearch 키워드 검색, 매일 자동 수집(팀 페이지에 "다음 단계"로 표기).
 
 ## 8. 작업 규칙
 - API 키나 비밀 값은 절대 커밋하지 않는다. 커밋 전 git status로 확인한다.
