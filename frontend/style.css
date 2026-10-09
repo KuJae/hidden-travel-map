@@ -38,7 +38,22 @@ a{color:inherit}
 .wrap{max-width:1080px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
 
 /* 상단 */
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px}
+/* 상단 */
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  padding-block:18px;
+
+  /* 스크롤 시 상단 고정 */
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--serif);font-weight:700;font-size:1.1rem}
 .brand svg{width:30px;height:30px;flex:none}
 .nav{display:flex;flex-wrap:wrap;gap:2px}

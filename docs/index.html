@@ -58,7 +58,22 @@ code{font-family:var(--mono);font-size:.84em;background:var(--bg);border:1px sol
 .ph{background:var(--lantern-tint);color:var(--lantern-ink);padding:0 .3em;border-radius:4px}
 
 /* top bar */
-.top{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-block:22px}
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding-block:22px;
+
+  position:sticky;
+  top:0;
+  z-index:1000;
+
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 0 0 100vmax var(--bg);
+  clip-path:inset(0 -100vmax -1px);
+}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
 .brand-mark{width:36px;height:36px;flex:none}
 .brand-name{display:block;font-family:var(--serif);font-weight:700;font-size:1.15rem;line-height:1.25}
