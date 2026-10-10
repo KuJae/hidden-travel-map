@@ -46,20 +46,38 @@ def get_region(code: str = CODE, conn: psycopg.Connection = Depends(get_conn)):
     return row
 
 
+
 @router.get("/regions/{code}/attractions", response_model=list[Attraction], summary="선택 지역의 사진 있는 관광지")
 def list_attractions(
     code: str = CODE,
     limit: int = Query(6, ge=1, le=50, description="최대 개수"),
+    category: str | None = Query(None, description="관광지 유형"),
     conn: psycopg.Connection = Depends(get_conn),
 ):
+    if category not in (None, "관광지", "문화시설", "레포츠"):
+        raise HTTPException(status_code=422, detail="지원하지 않는 관광지 유형")
+
     region_id = _region_id(conn, code)
-    return conn.execute("""
-        SELECT content_id, title, category, address, lat, lon, image_url, image_license
+
+    sql = """
+        SELECT content_id, title, category, address,
+               lat, lon, image_url, image_license
         FROM attractions
         WHERE region_id = %s
+    """
+    params = [region_id]
+
+    if category is not None:
+        sql += " AND category = %s"
+        params.append(category)
+
+    sql += """
         ORDER BY (category = '관광지') DESC, title
         LIMIT %s
-    """, (region_id, limit)).fetchall()
+    """
+    params.append(limit)
+
+    return conn.execute(sql, tuple(params)).fetchall()
 
 
 @router.get("/hidden", response_model=list[RegionSummary], summary="숨은 지역 후보 (방문 적고 볼거리 있는 곳)")

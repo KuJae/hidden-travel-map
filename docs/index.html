@@ -447,13 +447,13 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
   </a>
   <nav class="nav" aria-label="페이지 구역">
     <a href="#scenario">시나리오</a>
-    <a href="#screens">화면</a>
-    <a href="#arch">구조</a>
+    <a href="#screens">주요기능</a>
+    <a href="#arch">아키텍쳐</a>
     <a href="#data">데이터</a>
-    <a href="#analysis">분석</a>
+    <a href="#analysis">인사이트</a>
     <a href="#bm">비즈니스</a>
-    <a href="#docs">문서</a>
-    <a href="#team">팀</a>
+    <a href="#docs">API</a>
+    <a href="#team">팀소개</a>
   </nav>
 </header>
 
@@ -462,7 +462,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
   <div class="hero-text">
     <h1>사람들이 덜 가는 곳에서<br>새로운 여행을 발견합니다</h1>
     <p class="sub">관광빅데이터로 ‘사람들이 덜 가는 곳’을 먼저 찾아주는 역발상 여행 서비스</p>
-    <p class="lead">숨은여행지도는 전국 230개 시군구의 최근 30일 방문량을 지도 색으로 보여줍니다. 연하게 칠해진 곳, 즉 방문이 적은 지역을 누르면 그 지역의 관광지와 사진이 나타납니다.</p>
+    <p class="lead">숨은여행지도는 전국 230개 시군구의 방문량을 지도 색으로 보여줍니다. 연하게 칠해진 곳, 즉 방문이 적은 지역을 누르면 그 지역의 관광지와 사진이 나타납니다.</p>
     <ul class="links" aria-label="프로젝트 링크">
       <li class="primary"><a href="https://hidden-travel-map.vercel.app/">
         <span class="lk-label">서비스 화면 (Vercel)</span>
@@ -586,7 +586,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     </li>
     <li>
       <span class="step-n" aria-hidden="true">4</span>
-      <h3>사진으로 반전</h3>
+      <h3>사진으로 관광지의 매력 확인</h3>
       <p>같은 화면에 그 지역 관광지 사진 6장이 나옵니다. 사람은 적어도 볼 것은 있다는 걸 바로 확인합니다.</p>
       <p class="uses"><span>TourAPI</span><code>GET /regions/{code}/attractions</code></p>
     </li>
@@ -829,7 +829,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     <div class="finds">
       <article class="find">
         <p class="find-num">0.06</p>
-        <h3>볼거리와 방문량은 거의 관계가 없습니다</h3>
+        <h3>볼거리와 방문량의 상관관계는 매우 낮습니다.</h3>
         <p>사진 있는 관광지 수와 방문량(둘 다 로그)의 상관계수가 0.06입니다. 방문 하위 20% 지역의 관광지 수 중앙값은 61곳으로 상위 20% 지역(66곳)과 비슷합니다. “사람은 적게 가지만 볼 것은 있다”의 근거입니다.</p>
       </article>
       <article class="find">
@@ -880,9 +880,9 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
 
   <h3 class="sub-h">왜 지자체인가</h3>
   <ul class="why">
-    <li><h4>목표가 같습니다</h4><p>「인구감소지역 지원 특별법」(2023년 시행)은 주민등록 인구에 통근·관광 등으로 머무는 사람까지 더한 ‘생활인구’를 늘리는 것을 정책 목표로 둡니다. 우리 서비스가 보내는 외지인 방문객이 바로 그 체류 인구입니다.</p></li>
-    <li><h4>예산이 있습니다</h4><p>인구감소지역에는 지방소멸대응기금(2022년부터 10년간 매년 1조 원 규모) 같은 관광·체류 사업 재원이 있습니다. 홍보 채널과 성과 측정 수단을 찾는 수요가 분명합니다.</p></li>
-    <li><h4>성과를 같은 데이터로 잽니다</h4><p>협업 전후 외지인·외국인 방문량을 같은 관광빅데이터로 비교할 수 있습니다. 지자체가 사업 성과 보고에 그대로 쓸 수 있는 숫자입니다.</p></li>
+    <li><h4>목표가 같습니다</h4><p>「인구감소지역 지원 특별법」(2023년 시행)은 주민등록 인구에 통근·관광 등으로 머무는 사람까지 더한 ‘생활인구’를 늘리는 것을 정책 목표로 둡니다. 외지인 방문을 유도함으로써 지역의 관광 활성화와 생활인구 확대에 기여하는 것을 목표로 합니다.</p></li>
+    <li><h4>예산이 있습니다</h4><p>인구감소지역에는 지방소멸대응기금(2022년부터 10년간 매년 1조 원 규모) 같은 관광·체류 사업 재원이 있습니다. 관광 홍보와 성과 측정에 활용할 수 있는 잠재 수요가 있습니다.</p></li>
+    <li><h4>성과를 같은 데이터로 잽니다</h4><p>협업 전후 방문량뿐 아니라 방문 규모와 과거 추세가 유사한 비협업 지역의 증감률도 함께 비교합니다. 이를 통해 계절적 요인 등을 고려한 보다 객관적인 성과 측정이 가능합니다.</p></li>
   </ul>
 
   <h3 class="sub-h">대상 고객과 제공 가치</h3>
@@ -903,26 +903,26 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <span class="tag">공동 캠페인</span>
       <h4>이달의 숨은 여행지 기획전</h4>
       <p>후보 지자체와 함께 지역 소개, 추천 코스, 축제 일정을 묶어 첫 화면과 SNS에 소개합니다. 지자체 관광 홍보 예산으로 집행하는 위탁·공모 사업입니다.</p>
-      <p>성과는 캠페인 전후 외지인 방문량 변화로 보고합니다.</p>
+      <p>성과는 캠페인 전후 방문량 변화와 유사 비협업 지역 대비 증감률 차이로 평가합니다. 예를 들어 캠페인 지역이 30%, 비교지역이 10% 증가했다면 상대적 증가율 차이 +20%p를 성과 지표로 제시합니다.</p>
     </li>
     <li>
       <span class="tag">구독</span>
       <h4>지자체 방문 리포트</h4>
       <p>우리 지역 방문량 추이, 전국과 같은 도 안에서의 순위, 외지인·외국인 구성, 비슷한 지역과의 비교를 월간 리포트와 대시보드로 제공합니다.</p>
-      <p>지금의 <code>/stats</code> API와 분석 페이지가 원형입니다.</p>
+      <p>지금의 <code>/stats</code> API와 분석 페이지를 기반으로 확장할 계획입니다.</p>
     </li>
     <li>
       <span class="tag">콘텐츠 협업</span>
       <h4>관광 정보 보강과 체류 연결</h4>
       <p>지자체가 TourAPI에 관광지 사진과 정보를 보강하면 다음 수집 때 자동으로 반영됩니다. 사진이 많을수록 지역 상세가 풍부해집니다.</p>
-      <p>지역 상세에서 지자체의 한달살기·고향사랑기부 안내로 이어 방문을 체류로 바꿉니다.</p>
+      <p>지역 상세에서 지자체의 한달살기·고향사랑기부 안내로 이어 관광객의 체류와 지역 참여를 유도합니다.</p>
     </li>
   </ul>
   <div class="principle">
     <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false"><polygon points="18,2.5 31.5,10.25 31.5,25.75 18,33.5 4.5,25.75 4.5,10.25" style="fill:none;stroke:var(--forest);stroke-width:2.2"/><path d="M11.5 18.5l4.5 4.5 8.5-9" style="fill:none;stroke:var(--forest);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"/></svg>
     <div>
       <h4>순위는 팔지 않습니다</h4>
-      <p>Ghost Index와 후보 선정은 공공데이터로만 계산하고 협업 여부와 무관하게 둡니다. 유료 협업은 순위가 아니라 소개 콘텐츠와 리포트에만 적용합니다. 그래야 여행자가 믿고 쓰고, 지자체에게도 ‘데이터로 뽑힌 곳’이라는 홍보 가치가 남습니다.</p>
+      <p>Ghost Index와 후보 선정은 공공데이터로만 계산하고 협업 여부와 관계없이 동일한 기준을 적용합니다. 유료 협업은 순위가 아니라 소개 콘텐츠와 리포트에만 적용합니다. 그래야 여행자가 믿고 쓰고, 지자체에게도 ‘데이터로 뽑힌 곳’이라는 홍보 가치가 남습니다.</p>
     </div>
   </div>
 
@@ -931,11 +931,11 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     <ul>
       <li><b>지금 운영비는 월 0원입니다.</b> Vercel, Render, Supabase 무료 플랜과 무료 공공데이터를 씁니다.</li>
       <li><b>수집 부담이 작습니다.</b> 관광빅데이터는 하루치가 1회 호출이라, 매일 갱신해도 개발계정 한도(API별 하루 1,000회)의 극히 일부만 씁니다.</li>
-      <li><b>상시 운영으로 올려도 부담이 적습니다.</b> 잠들지 않는 유료 기본 플랜으로 바꿔도 월 10만 원 안쪽이며, 협업 사업 한 건으로 충당할 수 있는 규모입니다.</li>
+      <li><b>상시 운영으로 올려도 부담이 적습니다.</b> 잠들지 않는 유료 기본 플랜으로 바꿔도 월 10만 원 안쪽이며, 실제 운영 비용과 협업 수익은 시범 사업에서 검증할 계획입니다.</li>
     </ul>
     <ol class="road">
       <li class="now"><strong>1단계 · 지금</strong><span>공개 서비스와 분석 페이지로 데이터와 지표를 검증합니다.</span></li>
-      <li><strong>2단계 · 시범 협업</strong><span>후보 지자체 한두 곳과 기획전을 열고, 전후 방문량으로 효과를 확인합니다.</span></li>
+      <li><strong>2단계 · 시범 협업</strong><span>후보 지자체 한두 곳과 기획전을 열고, 방문 규모와 과거 추세가 유사한 비협업 지역을 비교군으로 선정해 캠페인 성과를 검증합니다.</span></li>
       <li><strong>3단계 · 확장</strong><span>매일 자동 수집으로 바꾸고, 지자체 리포트 구독과 광역 단위 협업으로 넓힙니다.</span></li>
     </ol>
   </div>
@@ -1143,16 +1143,18 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     </li>
   </ol>
   <div class="dod">
-    <h3>발표 완료 기준</h3>
+    <h3>완료 기준</h3>
     <ul>
-      <li>배포 주소를 열면 전국 지도가 보이고, 지역별 색 농도가 실제 DB 방문량과 연결되어 있습니다.</li>
-      <li>연한 지역을 누르면 방문 적은 순위, Ghost Index, 사진 있는 관광지가 함께 나옵니다.</li>
-      <li>FastAPI 문서 화면(/docs)에서 엔드포인트 7개가 정상적으로 응답합니다.</li>
-      <li>실패에 대비한 캡처와 응답 예시를 이 페이지에 담았습니다 (<a href="#screens">화면</a>, <a href="#api">API 문서</a>).</li>
-      <li class="todo">팀원 누구나 외부 API에서 DB, 우리 API, 화면으로 이어지는 흐름을 설명할 수 있습니다. (발표 전 연습)</li>
+      <li><strong>서비스 아키텍처:</strong> 프론트엔드·FastAPI·Supabase·외부 공공 API의 구성과 데이터 수집·저장·조회 흐름을 설명합니다.</li>
+      <li><strong>사용 데이터 및 출처:</strong> 관광빅데이터·TourAPI·SGIS의 제공 기관, 출처 URL, 수집 항목과 활용 방식을 정리했습니다.</li>
+      <li><strong>데이터 활용 기획 시나리오:</strong> 여행자의 숨은 여행지 탐색 문제와 지자체의 관광 활성화 수요를 연결한 서비스 활용 시나리오를 제시합니다.</li>
+      <li><strong>비즈니스 모델:</strong> 지자체 공동 캠페인·방문 리포트·콘텐츠 협업을 통한 수익 창출과 지속 운영 방안을 제시합니다.</li>
+      <li><strong>주요 페이지 및 기능:</strong> 전국 방문량 지도, 지역별 상세 정보, 관광지 사진, 데이터 분석 페이지와 API 문서를 구현했습니다.</li>
+      <li><strong>데이터 분석·정리 결과:</strong> 방문량 분포·지역별 비교·관광지 수와 방문량의 관계 등을 분석하고 주요 결과를 제시합니다.</li>
     </ul>
   </div>
-  <p class="scope">이번에는 AI 추천, 날씨, 맛집, 숙박, 여행 코스, 개인화를 넣지 않았습니다. 기획안의 키워드 검색(OpenSearch)과 매일 자동 수집은 다음 단계로 남겼습니다.</p>
+  <p class="scope">이번에는 AI 추천, 날씨, 맛집, 숙박, 여행 코스, 개인화를 넣지 않았습니다. 
+    키워드 검색(OpenSearch)과 매일 자동 수집은 향후 단계로 남겼습니다.</p>
 </section>
 </main>
 
