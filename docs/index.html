@@ -954,7 +954,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
           <tr><td class="nw"><code>GET /health</code></td><td>서버와 DB 연결 확인</td><td>없음</td><td><code>Health</code> {status, db}<small>DB 연결 실패 시 503과 원인 힌트</small></td></tr>
           <tr><td class="nw"><code>GET /regions</code></td><td>전국 시 단위 230곳 방문량 요약. 지도 색칠에 씁니다</td><td>없음</td><td><code>RegionSummary[]</code> 230개</td></tr>
           <tr><td class="nw"><code>GET /regions/{code}</code></td><td>선택 지역 하나의 방문량 요약</td><td><b>code</b> (경로) 관광빅데이터 시군구 코드. 예 47760</td><td><code>RegionSummary</code><small>없는 코드나 일반구 코드는 404</small></td></tr>
-          <tr><td class="nw"><code>GET /regions/{code}/attractions</code></td><td>선택 지역의 사진 있는 관광지</td><td><b>code</b> (경로)<br><b>limit</b> (쿼리) 1~50, 기본 6</td><td><code>Attraction[]</code><small>관광지 유형 먼저, 이름순</small></td></tr>
+          <tr><td class="nw"><code>GET /regions/{code}/attractions</code></td><td>선택 지역의 사진 있는 관광지</td><td><b>code</b> (경로)<br><b>limit</b> (쿼리) 1~500, 기본 6<br><b>category</b> (쿼리) 관광지·문화시설·레포츠 중 하나, 생략하면 전체</td><td><code>Attraction[]</code><small>관광지 유형 먼저, 이름순. 지원하지 않는 유형은 422</small></td></tr>
           <tr><td class="nw"><code>GET /hidden</code></td><td>숨은 지역 후보. Ghost Index 높은 순</td><td><b>max_percentile</b> 0~100, 기본 30<br><b>min_attractions</b> 기본 3<br><b>limit</b> 1~230, 기본 20</td><td><code>RegionSummary[]</code></td></tr>
           <tr><td class="nw"><code>GET /stats/overview</code></td><td>분석 페이지용 전국 요약</td><td>없음</td><td><code>StatsOverview</code><small>수집 현황, 관광객 구성, 방문량 분포, 후보 수, 상관계수</small></td></tr>
           <tr><td class="nw"><code>GET /stats/sido</code></td><td>시도별 방문량·관광객 구성·후보 수</td><td>없음</td><td><code>SidoStats[]</code> 시도 16개</td></tr>
