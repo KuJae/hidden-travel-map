@@ -50,7 +50,7 @@ def get_region(code: str = CODE, conn: psycopg.Connection = Depends(get_conn)):
 @router.get("/regions/{code}/attractions", response_model=list[Attraction], summary="선택 지역의 사진 있는 관광지")
 def list_attractions(
     code: str = CODE,
-    limit: int = Query(6, ge=1, le=50, description="최대 개수"),
+    limit: int = Query(6, ge=1, le=500, description="최대 개수 (가장 많은 제주시가 408곳)"),
     category: str | None = Query(None, description="관광지 유형"),
     conn: psycopg.Connection = Depends(get_conn),
 ):

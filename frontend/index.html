@@ -137,6 +137,34 @@
 @media(prefers-reduced-motion:reduce){
   .category-btn{transition:none}
 }
+
+/* 관광지 전체 보기: 제주시(408곳)처럼 많아도 패널이 끝없이 길어지지 않게 목록 안에서 스크롤 */
+.photos.all{
+  max-height:min(70vh,640px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-right:4px
+}
+.more-btn{
+  display:block;
+  width:100%;
+  margin-top:10px;
+  font:inherit;
+  font-size:.88rem;
+  font-weight:600;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--bg);
+  color:var(--ink);
+  cursor:pointer
+}
+.more-btn[hidden]{display:none}
+.more-btn:hover{border-color:var(--forest)}
+.more-btn:focus-visible{
+  outline:2px solid var(--forest);
+  outline-offset:3px
+}
 </style>
 </head>
 
@@ -416,6 +444,19 @@ async function select(code,{zoom=false}={}) {
   );
   photoNote.hidden = true;
 
+  /* 처음엔 6곳만, 전체 보기를 누르면 모두 (다시 누르면 6곳으로) */
+  const PREVIEW = 6;
+  const MAX = 500;   // 백엔드 limit 상한과 같게
+  let showAll = false;
+
+  const more = el("button","more-btn");
+  more.type = "button";
+  more.hidden = true;
+  more.addEventListener("click",() => {
+    showAll = !showAll;
+    loadAttractions(activeCategory);
+  });
+
   let activeCategory = "";
   let requestId = 0;
 
@@ -428,8 +469,12 @@ async function select(code,{zoom=false}={}) {
       el("p","muted","관광지 사진을 불러오는 중입니다.")
     );
     photoNote.hidden = true;
+    more.hidden = true;
 
-    const params = new URLSearchParams({limit:"6"});
+    // 6곳 미리보기는 1개 더 받아서 더 있는지 안다
+    const params = new URLSearchParams({
+      limit:String(showAll ? MAX : PREVIEW + 1)
+    });
     if (category) params.set("category",category);
 
     try {
@@ -453,7 +498,10 @@ async function select(code,{zoom=false}={}) {
         return;
       }
 
-      for (const a of items) {
+      const hasMore = items.length > PREVIEW;
+      photos.classList.toggle("all",showAll);
+
+      for (const a of showAll ? items : items.slice(0,PREVIEW)) {
         const card = el("a","photo");
         card.href = naverUrl(a.title,r);
         card.target = "_blank";
@@ -483,6 +531,16 @@ async function select(code,{zoom=false}={}) {
 
         card.append(img,cap);
         photos.appendChild(card);
+      }
+
+      if (hasMore) {
+        more.textContent = showAll
+          ? `${PREVIEW}곳만 보기 (지금 ${num(items.length)}곳 모두 표시)`
+          : category
+            ? `${category} 전체 보기`
+            : `전체 ${num(r.attraction_count)}곳 보기`;
+        more.setAttribute("aria-expanded",String(showAll));
+        more.hidden = false;
       }
 
       photoNote.hidden = false;
@@ -535,7 +593,7 @@ async function select(code,{zoom=false}={}) {
     filter.appendChild(btn);
   }
 
-  d.append(h,g,facts,filter,photos,photoNote);
+  d.append(h,g,facts,filter,photos,more,photoNote);
 
   if (!wide.matches) {
     d.scrollIntoView({
