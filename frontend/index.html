@@ -22,7 +22,8 @@
 @media(min-width:960px){
   .layout{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:start}
 }
-.map-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative}
+/* isolation: 지도 컨트롤(z-index 1000)이 스크롤할 때 고정 메뉴 위로 올라오지 않게 카드 안에 가둔다 */
+.map-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative;isolation:isolate}
 #map{height:min(76vh,740px);min-height:440px;border-radius:16px;background:var(--panel)}
 .leaflet-container{background:var(--panel);font-family:var(--sans)}
 .leaflet-tooltip{font-family:var(--sans);font-size:13px;border-radius:8px}
