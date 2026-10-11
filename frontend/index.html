@@ -212,6 +212,75 @@
 .save-btn[aria-pressed="true"] path{fill:var(--lantern)}
 .save-btn:hover{border-color:var(--forest)}
 .save-btn:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+
+/* 관심 관광지 비교 창 (관심 목록 = 비교함) */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.compare-open{
+  all:unset;box-sizing:border-box;display:block;
+  margin:4px 12px 6px;padding:8px 12px;border-radius:10px;
+  background:var(--ink);color:var(--panel);
+  font-size:.84rem;font-weight:600;text-align:center;cursor:pointer
+}
+.compare-open:disabled{opacity:.4;cursor:default}
+.compare-open:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+.compare{
+  width:min(1120px,calc(100vw - 32px));
+  max-height:calc(100dvh - 48px);
+  padding:20px 22px;overflow:hidden;
+  border:1px solid var(--line);border-radius:18px;
+  background:var(--panel);color:var(--ink);
+  box-shadow:0 24px 60px rgba(21,41,31,.25)
+}
+.compare[open]{display:flex;flex-direction:column;gap:10px}
+.compare::backdrop{background:rgba(21,41,31,.5)}
+.compare-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.compare-head h2{font-size:1.3rem;display:flex;align-items:center;gap:8px}
+.compare-close{
+  all:unset;box-sizing:border-box;flex:none;
+  width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;
+  color:var(--muted);font-size:1.05rem;cursor:pointer
+}
+.compare-close:hover{background:var(--bg);color:var(--ink)}
+.compare-close:focus-visible{outline:2px solid var(--forest)}
+.compare-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px}
+.cmp{border-collapse:separate;border-spacing:0;font-size:.86rem;min-width:100%}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.cmp td,.cmp thead th{min-width:190px;max-width:250px;overflow-wrap:anywhere}
+.cmp td{white-space:pre-line;line-height:1.5}
+.cmp th[scope="row"],.cmp .corner{
+  position:sticky;left:0;z-index:1;
+  min-width:0;background:var(--panel);
+  color:var(--muted);font-weight:500;font-size:.8rem;white-space:nowrap;
+  border-right:1px solid var(--line)
+}
+.cmp thead th{font-weight:400}
+.cmp thead img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;border-radius:8px;background:var(--line)}
+.cmp thead b{display:block;margin-top:8px;font-size:.92rem;line-height:1.35}
+.cmp thead b a{text-decoration:none}
+.cmp thead b a:hover{text-decoration:underline}
+.cmp-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cmp-actions button{
+  font:inherit;font-size:.76rem;padding:4px 10px;
+  border:1px solid var(--line);border-radius:999px;
+  background:transparent;color:var(--muted);cursor:pointer
+}
+.cmp-actions button:hover{border-color:var(--forest);color:var(--ink)}
+.cmp-actions button:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+.cmp .badge{margin-left:6px}
+.cmp .none{color:var(--faint)}
+.cmp td a svg{width:.8em;height:.8em;margin-left:4px;vertical-align:-1px}
+.cmp details summary{cursor:pointer;color:var(--forest);font-weight:600}
+.cmp details p{margin:6px 0 0}
+.compare-note{margin:0;font-size:.78rem}
+@media(max-width:719px){
+  .compare{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:14px}
+  .cmp td,.cmp thead th{min-width:160px}
+  .cmp th[scope="row"],.cmp .corner{
+    white-space:normal;width:68px;min-width:68px;max-width:68px;
+    padding:10px 8px;font-size:.74rem
+  }
+}
 </style>
 </head>
 
@@ -271,6 +340,7 @@
           </div>
           <div class="float-pane" id="pane-saved" hidden>
             <p class="float-rule">사진 왼쪽 위 ♡ 를 누르면 여기에 모입니다. 이 브라우저에만 저장됩니다.</p>
+            <button type="button" class="compare-open" id="compare-open" disabled>관심 관광지 비교하기</button>
             <ol class="float-list saved-list" id="saved"></ol>
           </div>
         </div>
@@ -306,6 +376,19 @@
   </div>
 </main>
 
+<dialog class="compare" id="compare" aria-labelledby="compare-title">
+  <div class="compare-head">
+    <h2 id="compare-title">관심 관광지 비교 <span class="count" id="compare-count"></span></h2>
+    <button type="button" class="compare-close" id="compare-close" aria-label="비교 창 닫기">✕</button>
+  </div>
+  <p class="muted" id="compare-status" role="status"></p>
+  <div class="compare-scroll" id="compare-body"></div>
+  <p class="muted compare-note">
+    방문량·순위·Ghost Index 는 관광지가 속한 시군구 기준입니다 (최신 공개 기준 30일, 외지인+외국인).
+    관광지 정보와 사진: 한국관광공사 TourAPI (공공누리). 빈칸은 TourAPI 에 정보가 없는 항목입니다.
+  </p>
+</dialog>
+
 <footer class="foot wrap wide">
   <div class="inner">
     <p>방문량: 한국관광공사 빅데이터 지역별 방문자수 (외지인+외국인, 최신 공개 기준 30일) · 관광지와 사진: 한국관광공사 TourAPI · 경계: 국가데이터처 SGIS (2025, 인천 신설 구는 읍면동 경계를 합쳐 만듦)</p>
@@ -333,6 +416,11 @@ const short = d => {
 
 const isCandidate = r => Boolean(r && r.is_candidate);
 const ghost = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
+
+// 방문 적은 순 (1위 = 전국에서 방문이 가장 적은 곳). 상세 패널과 비교표가 같이 쓴다
+const visitRank = r => [...regions.values()].filter(
+  x => x.avg_daily_visitors < r.avg_daily_visitors
+).length + 1;
 
 const SIDO_SHORT = {
   "서울특별시":"서울",
@@ -435,7 +523,185 @@ function refreshSaved() {
   for (const b of document.querySelectorAll("#detail .save-btn")) {
     b.setAttribute("aria-pressed",String(isSaved(b.dataset.id)));
   }
+
+  const open = $("compare-open");
+  open.disabled = !saved.length;
+  open.textContent = saved.length
+    ? `관심 관광지 비교하기 (${saved.length}곳)`
+    : "관심 관광지 비교하기";
   updateHead();
+}
+
+/* 관심 관광지 비교: 관심 목록 전체를 나란히 놓고 TourAPI 상세(GET /attractions/{id})로 비교 */
+const details = new Map();   // content_id → 응답. 창을 다시 열 때 다시 받지 않는다
+
+async function openCompare() {
+  const dlg = $("compare");
+  if (!dlg.open) dlg.showModal();
+  $("compare-count").textContent = `${saved.length}곳`;
+  $("compare-body").textContent = "";
+  $("compare-status").textContent = "관광지 정보를 불러오는 중입니다.";
+  const slow = () => {
+    $("compare-status").textContent =
+      "서버를 깨우는 중입니다. 무료 서버라 처음 한 번은 1분 가까이 걸릴 수 있습니다.";
+  };
+
+  // 상세를 못 받은 것(retry)은 이번엔 있는 만큼 보여 주고, 창을 다시 열 때 다시 받는다
+  const missing = saved.filter(s => !details.has(s.id) || details.get(s.id).retry);
+  const results = await Promise.allSettled(
+    missing.map(s => getJSON(`/attractions/${s.id}`,slow))
+  );
+  results.forEach((res,i) => {
+    details.set(missing[i].id,res.status === "rejected"
+      ? {error:res.reason.message,retry:true}
+      : {...res.value,retry:!res.value.detail_fetched_at});
+  });
+  if (dlg.open) renderCompare();
+}
+
+function cmpOverview(text) {
+  const det = el("details");
+  det.append(el("summary",null,`소개 보기 (${num(text.length)}자)`),el("p",null,text));
+  return det;
+}
+
+function renderCompare() {
+  const body = $("compare-body");
+  const status = $("compare-status");
+  body.textContent = "";
+  $("compare-count").textContent = `${saved.length}곳`;
+
+  if (!saved.length) {
+    status.textContent = "관심 관광지가 없습니다. 사진 왼쪽 위 ♡ 로 담아 주세요.";
+    return;
+  }
+
+  const cols = saved.map(s => ({s,a:details.get(s.id) || {error:"불러오지 못함"}}));
+  const ok = cols.filter(c => !c.a.error);
+  const noDetail = ok.filter(c => !c.a.detail_fetched_at).length;
+  status.textContent = [
+    saved.length === 1
+      ? "한 곳만 담겨 있습니다. ♡ 로 더 담으면 나란히 비교할 수 있습니다."
+      : `${saved.length}곳을 나란히 비교합니다.`,
+    noDetail ? `${noDetail}곳은 상세 정보를 불러오지 못해 기본 정보만 보입니다.` : "",
+    cols.length > ok.length ? `${cols.length - ok.length}곳은 정보를 불러오지 못했습니다.` : ""
+  ].filter(Boolean).join(" ");
+
+  // 방문이 가장 적은 지역의 관광지에 "가장 한산" 표시 (지역이 2곳 이상 다를 때만)
+  const avgs = ok.map(c => c.a.region?.avg_daily_visitors).filter(v => v != null);
+  const minAvg = new Set(avgs).size > 1 ? Math.min(...avgs) : null;
+
+  const rows = [
+    ["유형",a => a.category],
+    ["지역",a => {
+      if (!a.region) return null;
+      const span = el("span",null,`${a.region.sido_nm} ${a.region.signgu_nm}`);
+      if (a.region.is_candidate) span.appendChild(el("span","badge","숨은 지역 후보"));
+      return span;
+    }],
+    ["하루 평균 방문 (지역)",a => {
+      if (a.region?.avg_daily_visitors == null) return null;
+      const span = el("span",null,`${num(a.region.avg_daily_visitors)}명`);
+      if (a.region.avg_daily_visitors === minAvg) span.appendChild(el("span","badge","가장 한산"));
+      return span;
+    }],
+    ["방문 적은 순 (지역)",a => a.region && `전국 ${regions.size}곳 중 ${visitRank(a.region)}위`],
+    ["Ghost Index (지역)",a => a.region?.ghost_index == null ? null : ghost(a.region.ghost_index)],
+    ["이용시간",a => a.usetime],
+    ["쉬는날",a => a.restdate],
+    ["이용요금",a => a.usefee],
+    ["주차",a => a.parking],
+    ["반려동물",a => a.chkpet],
+    ["유모차",a => a.chkbabycarriage],
+    ["문의처",a => a.tel],
+    ["홈페이지",a => {
+      if (!a.homepage) return null;
+      const link = el("a",null,"홈페이지 열기");
+      link.href = a.homepage;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.appendChild(externalIcon());
+      return link;
+    }],
+    ["주소",a => a.address],
+    ["소개",a => a.overview && cmpOverview(a.overview)]
+  ];
+
+  const table = el("table","cmp");
+  const caption = el("caption","sr-only","관심 관광지 비교표");
+  const head = el("tr");
+  head.appendChild(el("th","corner"));
+  for (const {s,a} of cols) {
+    const th = el("th");
+    th.scope = "col";
+    if (a.image_url) {
+      const img = el("img");
+      img.src = a.image_url;
+      img.alt = "";
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      th.appendChild(img);
+    }
+    const name = el("b");
+    if (a.region) {
+      const link = el("a",null,s.title);
+      link.href = naverUrl(s.title,a.region);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = "네이버에서 설명 보기 (새 창)";
+      name.appendChild(link);
+    } else {
+      name.textContent = s.title;
+    }
+    th.append(name,el("span","muted",s.region));
+
+    const actions = el("div","cmp-actions");
+    if (a.region) {
+      const go = el("button",null,"지도에서 보기");
+      go.type = "button";
+      go.addEventListener("click",() => {
+        $("compare").close();
+        select(a.region.code,{zoom:true});
+      });
+      actions.appendChild(go);
+    }
+    const rm = el("button",null,"✕ 빼기");
+    rm.type = "button";
+    rm.setAttribute("aria-label",`${s.title} 관심 목록에서 빼기`);
+    rm.addEventListener("click",() => {
+      removeSaved(s.id);
+      renderCompare();
+    });
+    actions.appendChild(rm);
+    th.appendChild(actions);
+    head.appendChild(th);
+  }
+  const thead = el("thead");
+  thead.appendChild(head);
+
+  const tbody = el("tbody");
+  for (const [label,get] of rows) {
+    const values = cols.map(({a}) => a.error ? null : get(a));
+    if (values.every(v => v == null || v === "")) continue;   // 모두 빈 항목은 뺀다
+    const tr = el("tr");
+    const th = el("th",null,label);
+    th.scope = "row";
+    tr.appendChild(th);
+    for (const v of values) {
+      const td = el("td");
+      if (v == null || v === "") td.appendChild(el("span","none","정보 없음"));
+      else if (typeof v === "string") td.textContent = v;
+      else td.appendChild(v);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  table.append(caption,thead,tbody);
+  body.appendChild(table);
+  if (body.scrollWidth > body.clientWidth + 2) {
+    status.textContent += " 표를 옆으로 밀면 더 보입니다.";
+  }
 }
 
 /* 패널 헤더: 고른 탭의 이름과 개수 */
@@ -564,9 +830,7 @@ async function select(code,{zoom=false}={}) {
   g.append(el("span","ghost-num",ghost(r.ghost_index)),gl);
 
   const all = [...regions.values()];
-  const rank = all.filter(
-    x => x.avg_daily_visitors < r.avg_daily_visitors
-  ).length + 1;
+  const rank = visitRank(r);
 
   const facts = el("dl","facts");
   for (const [k,v] of [
@@ -887,6 +1151,17 @@ async function main() {
     b.addEventListener("click",() => setTab(b.dataset.tab));
   }
   refreshSaved();
+
+  const dlg = $("compare");
+  $("compare-open").addEventListener("click",openCompare);
+  $("compare-close").addEventListener("click",() => dlg.close());
+  // 창 바깥(어두운 배경)을 누르면 닫는다
+  dlg.addEventListener("click",e => {
+    const r = dlg.getBoundingClientRect();
+    const outside = e.clientX < r.left || e.clientX > r.right
+      || e.clientY < r.top || e.clientY > r.bottom;
+    if (e.target === dlg && outside) dlg.close();
+  });
 
   try {
     const [geo,list,hidden] = await Promise.all([
