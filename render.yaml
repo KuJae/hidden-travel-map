@@ -14,3 +14,6 @@ services:
       # Supabase > Connect > Session pooler 주소 (직접 연결 주소는 IPv6 전용이라 Render 에서 안 됨)
       - key: DATABASE_URL
         sync: false
+      # 공공데이터포털 인증키. 비교함의 관광지 상세(GET /attractions/{content_id})가 처음 볼 때 TourAPI 를 부른다
+      - key: TOUR_API_KEY
+        sync: false

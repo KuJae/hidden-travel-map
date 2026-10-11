@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -85,3 +85,19 @@ class Attraction(BaseModel):
         description="공공누리 유형. Type1 출처표시, Type3 출처표시+변경금지 (화면에 '출처: 한국관광공사' 표시)",
         examples=["Type3"],
     )
+
+
+class AttractionDetail(Attraction):
+    """비교함용: 관광지 + 그 관광지가 속한 지역의 방문량 + TourAPI 상세. 상세 항목은 TourAPI 에 없으면 null."""
+    region: RegionSummary | None = Field(description="관광지가 속한 시 단위 지역의 방문량 요약")
+    overview: str | None = Field(description="소개 (TourAPI detailCommon2)")
+    homepage: str | None = Field(description="홈페이지 주소")
+    tel: str | None = Field(description="문의처")
+    usetime: str | None = Field(description="이용시간 (TourAPI detailIntro2)")
+    restdate: str | None = Field(description="쉬는날")
+    usefee: str | None = Field(description="이용요금 (문화시설·레포츠만 제공)")
+    parking: str | None = Field(description="주차 (주차요금이 있으면 함께)")
+    chkpet: str | None = Field(description="반려동물 동반")
+    chkbabycarriage: str | None = Field(description="유모차 대여")
+    detail_fetched_at: datetime | None = Field(
+        description="TourAPI 상세를 받아 저장한 시각. null 이면 상세 조회에 실패한 것 (다음 요청 때 다시 시도)")

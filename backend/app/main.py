@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.db import connect
 from app.models import Health
-from app.routers import regions, stats
+from app.routers import attractions, regions, stats
 
 app = FastAPI(
     title="숨은여행지도 API",
@@ -57,4 +57,5 @@ def health_check():
 
 
 app.include_router(regions.router)
+app.include_router(attractions.router)
 app.include_router(stats.router)

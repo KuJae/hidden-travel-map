@@ -7,6 +7,7 @@
 --   region_master 1 ── 1 visitor_summary   (region_id)
 --   region_master 1 ── N attractions       (region_id)
 --   region_master 1 ── N region_master     (parent_region_id: 시 ── 일반구)
+--   attractions   1 ── 0..1 attraction_details (content_id: 비교함에서 처음 볼 때 채워짐)
 
 
 -- 1) 지역 마스터: 세 데이터 출처의 서로 다른 시군구 코드를 한 행으로 잇는다. collector/regions.py 가 채운다.
@@ -65,16 +66,36 @@ CREATE TABLE IF NOT EXISTS attractions (
 CREATE INDEX IF NOT EXISTS attractions_region_idx ON attractions (region_id);
 
 
+-- 5) 관광지 상세: TourAPI detailCommon2(소개·홈페이지) + detailIntro2(이용시간·쉬는날 등)
+--    17,658곳을 미리 받으면 하루 호출 한도(1,000건)를 넘어서, 비교함에서 처음 볼 때 FastAPI 가 받아 저장한다.
+--    detailIntro2 는 유형마다 필드 이름이 달라(usetime / usetimeculture / usetimeleports) 하나로 맞춰 저장한다.
+CREATE TABLE IF NOT EXISTS attraction_details (
+    content_id      TEXT PRIMARY KEY REFERENCES attractions (content_id) ON DELETE CASCADE,
+    overview        TEXT,                    -- 소개 (detailCommon2)
+    homepage        TEXT,                    -- 홈페이지 주소 (<a> 태그에서 http(s) 주소만 꺼냄)
+    tel             TEXT,                    -- 문의처 (infocenter, 없으면 tel)
+    usetime         TEXT,                    -- 이용시간
+    restdate        TEXT,                    -- 쉬는날
+    usefee          TEXT,                    -- 이용요금 (문화시설·레포츠만 제공)
+    parking         TEXT,                    -- 주차 (주차요금이 있으면 함께)
+    chkpet          TEXT,                    -- 반려동물 동반
+    chkbabycarriage TEXT,                    -- 유모차 대여
+    fetched_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+
 -- 보안: Supabase 가 자동으로 여는 REST API(Data API, anon 키)로는 이 표들을 읽고 쓰지 못하게 한다.
 -- 우리 FastAPI 는 postgres 계정(RLS 우회)으로 접속하므로 영향이 없다.
 ALTER TABLE region_master   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE visitor_daily   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE visitor_summary ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attractions     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attraction_details ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN   -- Supabase 에만 있는 역할
-        REVOKE ALL ON region_master, visitor_daily, visitor_summary, attractions FROM anon, authenticated;
+        REVOKE ALL ON region_master, visitor_daily, visitor_summary, attractions, attraction_details
+            FROM anon, authenticated;
     END IF;
 END $$;
 
