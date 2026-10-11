@@ -118,8 +118,9 @@
 - SGIS API 도메인은 sgisapi.mods.go.kr (옛 sgisapi.kostat.go.kr 은 302 리다이렉트). 경계 응답 좌표계는 문서상 UTM-K(EPSG:5179).
 - Render → Supabase 연결은 Session pooler 주소를 쓴다 (직접 연결 주소는 IPv6 전용).
 - Render·Supabase 무료 플랜은 미사용 시 잠들거나 일시정지될 수 있다. 발표 직전 /health 호출로 깨워둘 것.
-  → [2026-10-11, 강재구] .github/workflows/keep-render-awake.yml 이 2026-10-25 까지 10분마다 /health 를 부른다
-  (Render 는 15분 무요청 시 잠듦). GitHub 예약 실행은 늦을 수 있으니 발표 직전 수동 호출은 그대로 할 것. 10/25 이후 파일 삭제.
+  (Render 는 15분 무요청 시 잠들고 첫 응답이 30초~2분 걸린다.)
+  → [2026-10-12, 강재구] 자동으로 깨워 두는 기능은 하지 않기로 했다. GitHub Actions 예약 실행(10분마다 /health)을 넣었지만
+  1시간 넘게 한 번도 돌지 않아 워크플로를 지웠다. 발표 직전 수동 /health 호출로 대신한다.
 - Ghost Index는 절대 방문량 백분위라 인구·면적이 작은 군이 구조적으로 상위에 온다. "관광 가치 평가가 아닌 탐색용 지표"로 설명할 것.
 - **결정(2026-09-30, 강재구): 숨은 지역 후보 = 방문량 하위 30% AND 사진 있는 관광지 3곳 이상** (기획안 본문 20% / 목업 30% 중 30%). 후보 69곳(20%였으면 46곳).
   기준값은 backend/app/rules.py 한 곳에만 있고, API 가 지역마다 is_candidate 를 내려 준다. 화면은 이 값만 쓴다.
