@@ -52,8 +52,15 @@ def _homepage(value) -> str | None:
     return m.group(0) if m else None
 
 
+def _service_key() -> str:
+    # 대시보드에 붙여 넣을 때 흔히 딸려 오는 앞뒤 공백·줄바꿈·따옴표, .env 줄째 붙인 'TOUR_API_KEY=' 를 떼어 낸다
+    # (Render 에서 이런 값은 게이트웨이가 '등록되지 않은 서비스키'로 거절한다)
+    key = os.getenv("TOUR_API_KEY", "").strip().strip("\"'").strip()
+    return key.removeprefix("TOUR_API_KEY=").strip().strip("\"'").strip()
+
+
 def _first_item(client: httpx.Client, operation: str, **params) -> dict:
-    key = os.getenv("TOUR_API_KEY", "").strip()
+    key = _service_key()
     if not key:
         raise TourAPIError("TOUR_API_KEY 가 설정되지 않았습니다")
     query = {
