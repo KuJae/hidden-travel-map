@@ -615,9 +615,9 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     </figure>
     <figure class="shot wide">
       <button type="button" class="shot-btn" aria-label="관심 관광지 비교 화면 크게 보기">
-        <img src="images/service-compare.webp" width="1440" height="900" loading="lazy" alt="관심 관광지 비교 창. 서울 종로구 K-컬처 스크린, 제주시 가마오름, 경북 영양군 금강소나무생태경영림과 국립검마산자연휴양림 네 곳을 사진과 함께 나란히 놓고, 유형, 지역, 하루 평균 방문, 방문 적은 순, Ghost Index, 이용시간, 쉬는날, 주차, 유모차를 비교합니다. 영양군 두 곳에는 숨은 지역 후보와 가장 한산 표시가 붙어 있습니다.">
+        <img src="images/service-compare.webp" width="1440" height="900" loading="lazy" alt="관심 관광지 비교 창. 서울 종로구 K-컬처 스크린, 제주시 가마오름, 경북 영양군 금강소나무생태경영림과 국립검마산자연휴양림 네 곳을 사진과 함께 나란히 놓고, 유형, 지역, 하루 평균 방문, 방문 적은 순, Ghost Index, 이용시간, 쉬는날, 주차, 유모차를 비교합니다. 영양군 두 곳에는 숨은 지역 후보와 가장 한산 표시가 붙어 있고, 창 오른쪽 위에 공유하기 버튼이 있습니다.">
       </button>
-      <figcaption><strong>관심 관광지 비교</strong><span>♡로 담은 관광지를 지도 위 창에서 나란히 비교합니다. 지역 방문량·순위·Ghost Index와 TourAPI 상세(이용시간·쉬는날·요금·주차·문의처·소개)를 한 표로 보고, 방문이 가장 적은 곳에 ‘가장 한산’을 표시합니다. 관심 목록은 로그인 없이 이 브라우저에만 저장됩니다.</span></figcaption>
+      <figcaption><strong>관심 관광지 비교</strong><span>♡로 담은 관광지를 지도 위 창에서 나란히 비교합니다. 지역 방문량·순위·Ghost Index와 TourAPI 상세(이용시간·쉬는날·요금·주차·문의처·소개)를 한 표로 보고, 방문이 가장 적은 곳에 ‘가장 한산’을 표시합니다. 관심 목록은 로그인 없이 이 브라우저에만 저장됩니다. ‘공유하기’로 비교 링크를 복사하거나 휴대폰 공유 창(카카오톡·문자 등)으로 보내면, 받은 사람에게 같은 비교표가 열리고 마음에 드는 곳을 자기 관심 목록에 담을 수 있습니다.</span></figcaption>
     </figure>
     <figure class="shot">
       <button type="button" class="shot-btn" aria-label="데이터 분석 화면 크게 보기">
@@ -639,7 +639,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <thead><tr><th scope="col">페이지</th><th scope="col">주요 기능</th><th scope="col">부르는 API</th></tr></thead>
       <tbody>
         <tr><td class="nw"><b>지도</b><small>index.html</small></td>
-          <td><ul><li>방문량 5단계 색칠과 숨은 지역 후보 강조</li><li>숨은 지역 후보 목록 (지도 위에 떠 있는 패널, 접고 펼치기)</li><li>지역 찾기, 지역 상세 (Ghost Index, 하루 평균 방문, 순위, 사진 6장)</li><li>관광지 유형 필터(관광지·문화시설·레포츠)와 전체 보기</li><li>사진 왼쪽 위 ♡로 관심 관광지 저장 (브라우저에만), 패널의 관심 관광지 탭</li><li>관심 관광지 비교 창: 지역 방문량·순위와 이용시간·쉬는날·요금·주차 등을 나란히</li><li>주소 뒤 <code>#지역코드</code>로 바로 열기</li></ul></td>
+          <td><ul><li>방문량 5단계 색칠과 숨은 지역 후보 강조</li><li>숨은 지역 후보 목록 (지도 위에 떠 있는 패널, 접고 펼치기)</li><li>지역 찾기, 지역 상세 (Ghost Index, 하루 평균 방문, 순위, 사진 6장)</li><li>관광지 유형 필터(관광지·문화시설·레포츠)와 전체 보기</li><li>사진 왼쪽 위 ♡로 관심 관광지 저장 (브라우저에만), 패널의 관심 관광지 탭</li><li>관심 관광지 비교 창: 지역 방문량·순위와 이용시간·쉬는날·요금·주차 등을 나란히</li><li>비교 링크 공유 (<code>?compare=관광지ID,…</code>): 링크 복사·휴대폰 공유 창, 받은 사람은 같은 비교표를 보고 내 관심 목록에 담기</li><li>주소 뒤 <code>#지역코드</code>로 바로 열기</li></ul></td>
           <td class="nw"><code>/regions</code><br><code>/hidden</code><br><code>/regions/{code}/attractions</code><br><code>/attractions/{content_id}</code><br><code>/stats/overview</code></td></tr>
         <tr><td class="nw"><b>데이터 분석</b><small>analysis.html</small></td>
           <td><ul><li>수집 현황 요약과 데이터 출처</li><li>차트 5개 (관광객 구성, 방문량 분포, 시도별 비교, 사진 수와 방문량, Ghost Index 계산 과정)</li><li>차트마다 표 보기, 다크 모드, 휴대폰 화면 지원</li></ul></td>
