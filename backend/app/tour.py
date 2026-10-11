@@ -4,6 +4,7 @@
 인증키는 환경변수 TOUR_API_KEY (로컬은 저장소 루트 .env, Render 는 대시보드 환경변수).
 오류 메시지에는 인증키가 든 URL 이 찍히지 않게 오류 종류만 남긴다.
 """
+import hashlib
 import html
 import os
 import re
@@ -57,6 +58,13 @@ def _service_key() -> str:
     # (Render 에서 이런 값은 게이트웨이가 '등록되지 않은 서비스키'로 거절한다)
     key = os.getenv("TOUR_API_KEY", "").strip().strip("\"'").strip()
     return key.removeprefix("TOUR_API_KEY=").strip().strip("\"'").strip()
+
+
+def key_fingerprint() -> str:
+    """로그용 키 지문 (길이 + SHA-256 앞 8자리). 키는 남기지 않고, 로컬 .env 키와 같은 값인지 비교할 때만 쓴다.
+    Encoding/Decoding 키 어느 쪽을 넣어도 같은 지문이 나오게 푼 값으로 계산한다."""
+    key = unquote(_service_key())
+    return f"길이 {len(key)}, 지문 {hashlib.sha256(key.encode()).hexdigest()[:8]}" if key else "키 없음"
 
 
 def _first_item(client: httpx.Client, operation: str, **params) -> dict:

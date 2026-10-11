@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from app.db import get_conn
 from app.models import AttractionDetail
 from app.routers.regions import SUMMARY_SQL
-from app.tour import DETAIL_COLUMNS, TourAPIError, fetch_detail
+from app.tour import DETAIL_COLUMNS, TourAPIError, fetch_detail, key_fingerprint
 
 router = APIRouter(tags=["attractions"])
 
@@ -39,7 +39,8 @@ def get_attraction(content_id: str = CONTENT_ID, conn: psycopg.Connection = Depe
         try:
             detail = fetch_detail(content_id, row["category"])
         except TourAPIError as e:
-            print(f"TourAPI 상세 실패 {content_id}: {e}")   # Render 로그에서 확인 (인증키는 찍히지 않음)
+            # Render 로그에서 확인. 인증키는 찍지 않고 지문만 남긴다 (로컬 .env 키와 같은지 비교용)
+            print(f"TourAPI 상세 실패 {content_id}: {e} (키 {key_fingerprint()})")
         else:
             saved = conn.execute(UPSERT_DETAIL, (content_id, *(detail[c] for c in DETAIL_COLUMNS))).fetchone()
             conn.commit()
