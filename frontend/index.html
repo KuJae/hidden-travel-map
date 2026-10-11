@@ -270,8 +270,20 @@
 .cmp .badge{margin-left:6px}
 .cmp .none{color:var(--faint)}
 .cmp td a svg{width:.8em;height:.8em;margin-left:4px;vertical-align:-1px}
-.cmp details summary{cursor:pointer;color:var(--forest);font-weight:600}
-.cmp details p{margin:6px 0 0}
+/* 소개: 앞 3줄만 보이고 더 보기로 펼친다 */
+.cmp .ov-text{
+  margin:0;overflow:hidden;
+  display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:3;line-clamp:3
+}
+.cmp .ov.open .ov-text{display:block;-webkit-line-clamp:unset;line-clamp:unset}
+.cmp .ov-more{
+  all:unset;cursor:pointer;margin-top:4px;
+  color:var(--forest);font-weight:600;font-size:.82rem
+}
+.cmp .ov-more[hidden]{display:none}
+.cmp .ov-more:hover{text-decoration:underline}
+.cmp .ov-more:focus-visible{outline:2px solid var(--forest);outline-offset:2px;border-radius:4px}
 .compare-note{margin:0;font-size:.78rem}
 
 /* 비교 링크 공유 (?compare=id,id…): 보내는 쪽 공유 상자, 받는 쪽 안내 띠 */
@@ -702,10 +714,19 @@ async function openCompare(mode = {shared:false}) {
   if (dlg.open) renderCompare();
 }
 
+// 소개는 앞 3줄을 바로 보여 주고, 길면 더 보기/접기 (3줄 안에 다 들어가면 버튼은 renderCompare 가 숨긴다)
 function cmpOverview(text) {
-  const det = el("details");
-  det.append(el("summary",null,`소개 보기 (${num(text.length)}자)`),el("p",null,text));
-  return det;
+  const wrap = el("div","ov");
+  const more = el("button","ov-more","더 보기");
+  more.type = "button";
+  more.setAttribute("aria-expanded","false");
+  more.addEventListener("click",() => {
+    const open = wrap.classList.toggle("open");
+    more.textContent = open ? "접기" : "더 보기";
+    more.setAttribute("aria-expanded",String(open));
+  });
+  wrap.append(el("p","ov-text",text),more);
+  return wrap;
 }
 
 function renderCompare() {
@@ -873,6 +894,9 @@ function renderCompare() {
 
   table.append(caption,thead,tbody);
   body.appendChild(table);
+  for (const p of body.querySelectorAll(".ov-text")) {
+    if (p.scrollHeight <= p.clientHeight + 1) p.nextElementSibling.hidden = true;   // 잘린 게 없으면 더 보기 숨김
+  }
   if (shared) syncKeep();
   if (body.scrollWidth > body.clientWidth + 2) {
     status.textContent += " 표를 옆으로 밀면 더 보입니다.";
