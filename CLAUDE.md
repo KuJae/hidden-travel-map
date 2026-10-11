@@ -127,11 +127,13 @@
 
 ## 5. 아키텍처와 백엔드 설계 (기획안 기준)
 - 흐름: 외부 API(관광공사, SGIS) → 수집기(Python) → DB(PostgreSQL/Supabase) → 우리 API(FastAPI) → 화면(React, Leaflet)
-- DB 테이블 4개
+- DB 테이블 5개 (attraction_details 는 2026-10-11 비교함 때 추가)
   - region_master: 내부 region_id, 시도/시군구명, 관광빅데이터 코드, TourAPI 코드, SGIS 코드
   - visitor_daily: region_id, date, visitor_type, visitor_count (같은 요청을 다시 해도 중복 저장되지 않게 키 설정)
   - visitor_summary: 최근 30일 일평균 방문량, 방문량 백분위, Ghost Index
   - attractions: content_id, region_id, title, category, address, lat, lon, image_url
+  - attraction_details: content_id(FK attractions), 이용시간·쉬는날·요금·주차·문의처·소개 등 TourAPI 상세.
+    17,658곳을 미리 받으면 하루 1,000건 한도를 넘어서 GET /attractions/{content_id} 가 처음 볼 때 받아 저장(캐시)한다
 - 계산: 일별 방문량 = 외지인 + 외국인 → 30일 평균 → 전국 백분위 → Ghost Index = 100 − 방문량 백분위 → 후보 = 방문량 하위 30% AND 사진 있는 관광지 3곳 이상 (기획안은 20%, 2026-09-30 30%로 결정). Ghost Index는 팀이 정의한 지표이며 관광공사 공식 지표가 아님
 - FastAPI 엔드포인트 (/docs Swagger에서 테스트)
   - GET /health: 서버·DB 연결 확인
@@ -158,20 +160,23 @@ hidden-travel-map/
   .gitignore       .env, __pycache__, .venv, node_modules, collector/data/raw/ 등
   .env.example     필요한 키 목록 (DATA_LAB_KEY, TOUR_API_KEY, SGIS_SERVICE_ID, SGIS_SECRET_KEY, DATABASE_URL)
   render.yaml      Render Blueprint (rootDir: backend)
-  db/schema.sql    테이블 4개 + 종로구 시드. 여러 번 실행해도 안전
+  db/schema.sql    테이블 5개 + 종로구 시드. 여러 번 실행해도 안전
   db/region_master.csv  전국 시군구 코드 연결표 (regions.py 출력, 검토·문서용)
   collector/       common.py(호출·페이지네이션·재시도·DB), sample_calls.py, regions.py, visitors.py, attractions.py
-  backend/app/     FastAPI (main.py, db.py, models.py, routers/regions.py)
+  backend/app/     FastAPI (main.py, db.py, models.py, tour.py(TourAPI 상세), routers/regions.py·attractions.py·stats.py)
   docs/            팀 페이지 (GitHub Pages: main 브랜치 /docs)
     index.html
-    images/        mockup-0*.webp (기획안 목업 3장), service-map·service-analysis·service-swagger.webp, analysis-dist.webp (2026-10-04 서비스 캡처)
+    images/        mockup-0*.webp (기획안 목업 3장), service-map·service-compare·service-analysis·service-swagger.webp (2026-10-11 서비스 캡처), analysis-dist.webp
 ```
 - 수집기는 region_master 에 등록된 지역만 저장한다. 전국 확대 = region_master 매핑을 채우는 일.
 - region_master (collector/regions.py): 관광빅데이터 269개 전부. 일반구 39개는 parent_region_id 로 상위 시를 가리키고,
   순위(visitor_summary)·API 는 시 단위 230개(parent 없음)만 쓴다. 일반구 관광지는 상위 시로 모아 저장한다.
   관광빅데이터 signguCode = TourAPI lDongRegnCd + lDongSignguCd (세종만 lDongRegnCd 가 36110). SGIS 는 (시도, 이름) 매칭으로 249개 연결.
   시 단위 중 SGIS 경계가 없는 곳은 인천 제물포구·영종구·서해구·검단구 4곳 (2026 개편, 7주차 지도 때 처리).
-- API: GET /health, /regions(전국 시 단위), /regions/{code}, /regions/{code}/attractions, /hidden?max_percentile=20&min_attractions=3
+- API: GET /health, /regions(전국 시 단위), /regions/{code}, /regions/{code}/attractions, /hidden?max_percentile=20&min_attractions=3,
+  /attractions/{content_id}(비교함용 상세. Render 환경변수 TOUR_API_KEY 필요, 없으면 상세 항목만 null)
+- 지도 화면 관심 관광지(2026-10-10~11): 사진 왼쪽 위 ♡ 로 저장(localStorage `htm.saved.v1`), 지도 위 패널 '관심 관광지' 탭.
+  관심 목록 = 비교함. '관심 관광지 비교하기'를 누르면 `<dialog>` 비교표(지역 방문량·순위·Ghost Index + TourAPI 상세)가 뜬다.
 - [전국 수집 결과, 2026-08-02~08-31] visitor_daily 24,208행, 시 단위 230곳 순위. 방문 최하위 5곳은 영양군·울릉군·장수군·양구군·의령군
   (기획안 목업 예시와 일치). 사진 있는 관광지 17,658곳, 230곳 모두 3곳 이상. 숨은 지역 후보는 하위 20% 기준 46곳, 30% 기준 69곳.
 - [실호출 확인] TourAPI arrange=Q(대표 이미지 있는 것만)가 사진 없는 콘텐츠를 완전히 거르지 않는다(서울 관광지 775건 중 50건 사진 없음) → 코드에서 firstimage 로 한 번 더 거른다.
@@ -191,8 +196,14 @@ hidden-travel-map/
   Root Directory frontend, 빌드 없음. .vercelignore 로 frontend 만 올린다. 주소 뒤 #지역코드 로 그 지역을 연 채 시작(데모용).
   GitHub 연결됨(2026-09-30): main 에 push 하면 Vercel 이 자동 배포한다 (Render 와 같음).
 - 분석 API: /stats/overview, /stats/sido. 분석 결과 핵심: 사진 있는 관광지 수와 방문량의 상관(로그) 0.06 → "볼 것은 있다"의 근거.
-- API: https://hidden-travel-map-api.onrender.com (Swagger /docs). Render 무료·싱가포르·rootDir backend·main push 시 자동 배포. 환경변수 DATABASE_URL 은 Render 대시보드에만 있다.
+- API: https://hidden-travel-map-api.onrender.com (Swagger /docs). Render 무료·싱가포르·rootDir backend·main push 시 자동 배포. 환경변수 DATABASE_URL·TOUR_API_KEY 는 Render 대시보드에만 있다.
+- [실호출 확인 2026-10-11] Render(싱가포르)에서도 apis.data.go.kr 에 닿는다 (check-host 의 해외 노드는 대부분 timeout 이었지만 Render 는 응답을 받음).
+  Render 의 TOUR_API_KEY 값이 틀리면 Render 로그에 `TourAPI 상세 실패 …: 등록되지 않은 서비스키 (키 길이 N, 지문 xxxxxxxx)` 가 찍힌다.
+  지문은 푼 키의 SHA-256 앞 8자리라, 로컬 .env 키로 backend/app/tour.py 의 key_fingerprint() 를 돌려 비교하면 같은 키인지 안다
+  (2026-10-11 잘못 붙여 넣은 키를 길이부터 달라서 이걸로 찾음).
+  서버는 값의 따옴표·공백·'TOUR_API_KEY=' 접두어를 떼고 쓴다.
 - 진행 상태(2026-10-04): 수집·DB·API·지도·분석 페이지 배포 완료, 팀 페이지를 8주차 발표용으로 개편. 남은 것은 발표 연습(팀원 모두 흐름 설명), 개인 실습 기록.
+  (2026-10-10~11) 지도에 관광지 유형 필터(구대로)·전체 보기·관심 관광지 ♡·비교 창, API GET /attractions/{content_id}, 테이블 attraction_details 추가. 팀 페이지 반영.
   구현하지 않은 것: OpenSearch 키워드 검색, 매일 자동 수집(팀 페이지에 "다음 단계"로 표기).
 
 ## 8. 작업 규칙

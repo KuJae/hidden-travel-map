@@ -12,7 +12,7 @@ KAIST 디지털금융 MBA 클라우드컴퓨팅실습 1조 (이강훈, 강재구
 
 ```
 docs/              팀 소개 페이지 (GitHub Pages로 배포)
-db/schema.sql      DB 테이블 4개 (Supabase SQL Editor에서 실행)
+db/schema.sql      DB 테이블 5개 (Supabase SQL Editor에서 실행)
 db/region_master.csv  전국 시군구 코드 연결표 (regions.py 가 만듦, 검토용)
 collector/         외부 API 수집기 (Python)
   sample_calls.py    API 3종 샘플 호출, 응답 모양 확인
@@ -42,7 +42,7 @@ cp .env.example .env               # 그다음 .env 에 키를 채운다
 순서대로 실행합니다. 모두 다시 돌려도 중복 저장되지 않습니다.
 
 1. `python collector/sample_calls.py` — 키가 제대로 동작하는지, 응답 필드가 예상과 같은지 확인
-2. Supabase > SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run — 테이블 4개 생성
+2. Supabase > SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run — 테이블 5개 생성 (관광지 상세 `attraction_details` 는 비교 화면에서 처음 볼 때 API 가 채움)
 3. `python collector/regions.py` — 전국 시군구 코드 연결표(region_master) 채우기, 결과는 `db/region_master.csv`
 4. `python collector/visitors.py` — 최신 공개일 기준 30일 방문자 수 저장, 시 단위 순위·Ghost Index 계산
 5. `python collector/attractions.py` — 전국 사진 있는 관광지 저장 (일반구 관광지는 상위 시로 모음)
@@ -65,7 +65,8 @@ cp .env.example .env               # 그다음 .env 에 키를 채운다
 ## 배포
 
 - 팀 페이지 (GitHub Pages): Settings > Pages > Branch `main`, 폴더 `/docs` (설정 완료)
-- API (Render): New > Blueprint > 이 저장소 선택 → `render.yaml` 설정이 채워짐 → `DATABASE_URL`에 Supabase **Session pooler** 주소 입력
+- API (Render): New > Blueprint > 이 저장소 선택 → `render.yaml` 설정이 채워짐 → `DATABASE_URL`에 Supabase **Session pooler** 주소 입력,
+  `TOUR_API_KEY`에 공공데이터포털 인증키 입력 (`.env` 의 등호 뒤 값만, 따옴표 없이. 관광지 상세 `GET /attractions/{content_id}` 가 씀)
 - 화면 (Vercel): 프로젝트 `hidden-travel-map`, Root Directory `frontend`, 빌드 없음. `.vercelignore` 로 frontend 폴더만 올라간다
 - Render(API)와 Vercel(화면) 모두 GitHub `main` 에 연결돼 있어, push 하면 1~2분 뒤 자동으로 다시 배포된다
 

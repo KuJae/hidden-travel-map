@@ -205,7 +205,7 @@ h1{font-size:clamp(2.1rem,4.6vw,3.45rem);line-height:1.24;margin-bottom:22px}
 
 /* screens */
 .shots{display:grid;gap:36px 28px;margin-top:44px}
-@media (min-width:880px){.shots{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.shots .shot:first-child{grid-column:1 / -1}}
+@media (min-width:880px){.shots{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.shots .shot:first-child,.shots .shot.wide{grid-column:1 / -1}}
 .shot{margin:0}
 .shot-btn{display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);cursor:zoom-in}
 .shot-btn img{display:block;width:100%;height:auto}
@@ -349,6 +349,13 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
 .erd{margin-top:28px}
 .erd-hub{max-width:560px;margin-inline:auto}
 .erd-rels{display:grid;gap:44px;margin-top:44px;position:relative}
+/* attraction_details: attractions(셋째 칸) 바로 아래에 이어 붙인다 */
+.erd-sub{display:grid;margin-top:44px}
+@media (min-width:960px){
+  .erd-sub{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:64px}
+  .erd-sub>.tcard{grid-column:3}
+  .erd-sub>.tcard.r::before{top:-64px;height:64px}
+}
 @media (min-width:960px){
   .erd-rels{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:0;padding-top:64px}
   .erd-hub{position:relative}
@@ -534,8 +541,8 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <li><a href="#data"><span class="toc-k">사용 데이터 및 출처</span><span class="toc-t">공공데이터 세 가지</span></a></li>
       <li><a href="#analysis"><span class="toc-k">데이터 분석·정리 결과</span><span class="toc-t">데이터가 보여준 네 가지</span></a></li>
       <li><a href="#bm"><span class="toc-k">비즈니스 모델</span><span class="toc-t">지자체와 함께 운영합니다</span></a></li>
-      <li><a href="#api"><span class="toc-k">API 설명 문서</span><span class="toc-t">엔드포인트 7개</span></a></li>
-      <li><a href="#db"><span class="toc-k">DB 테이블 문서</span><span class="toc-t">테이블 4개와 관계</span></a></li>
+      <li><a href="#api"><span class="toc-k">API 설명 문서</span><span class="toc-t">엔드포인트 8개</span></a></li>
+      <li><a href="#db"><span class="toc-k">DB 테이블 문서</span><span class="toc-t">테이블 5개와 관계</span></a></li>
     </ol>
   </div>
 </section>
@@ -588,7 +595,8 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <span class="step-n" aria-hidden="true">4</span>
       <h3>사진으로 관광지의 매력 확인</h3>
       <p>같은 화면에 그 지역 관광지 사진 6장이 나옵니다. 사람은 적어도 볼 것은 있다는 걸 바로 확인합니다.</p>
-      <p class="uses"><span>TourAPI</span><code>GET /regions/{code}/attractions</code></p>
+      <p>마음에 드는 곳은 ♡로 담아 두고, 담은 관광지끼리 이용시간·쉬는날·주차와 지역 방문량을 나란히 비교합니다.</p>
+      <p class="uses"><span>TourAPI</span><code>GET /regions/{code}/attractions</code><code>GET /attractions/{content_id}</code></p>
     </li>
   </ol>
   <p class="also">같은 데이터를 다르게 쓰는 두 번째 사용자는 지자체입니다. “우리 지역은 전국에서 몇 번째로 덜 찾는 곳인가, 외지인은 늘고 있는가”를 같은 API로 답할 수 있습니다. <a href="#bm">비즈니스 모델에서 이어집니다 →</a></p>
@@ -597,13 +605,19 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
 <section class="section wrap" id="screens" style="padding-top:0">
   <p class="kicker">주요 페이지 및 기능</p>
   <h2>배포된 서비스 화면</h2>
-  <p class="section-lead">세 화면 모두 실제 DB 값으로 그립니다. 이미지를 누르면 크게 볼 수 있습니다.</p>
+  <p class="section-lead">모든 화면은 실제 DB 값으로 그립니다. 이미지를 누르면 크게 볼 수 있습니다.</p>
   <div class="shots">
     <figure class="shot">
       <button type="button" class="shot-btn" aria-label="지도 화면 크게 보기">
-        <img src="images/service-map.webp" width="1440" height="900" loading="lazy" alt="지도 화면. 시군구를 방문량에 따라 초록 농도로 칠하고 숨은 지역 후보를 주황색으로 표시한 지도 위에 숨은 지역 후보 69곳 목록이 떠 있고, 오른쪽에 경북 영양군의 Ghost Index 100, 하루 평균 방문 6,432명, 방문 적은 순 230곳 중 1위, 관광지 사진 카드가 있습니다.">
+        <img src="images/service-map.webp" width="1440" height="900" loading="lazy" alt="지도 화면. 시군구를 방문량에 따라 초록 농도로 칠하고 숨은 지역 후보를 주황색으로 표시한 지도 위에 숨은 지역 후보 69곳 목록이 떠 있고, 목록 위에 숨은 지역 후보와 관심 관광지 탭이 있습니다. 오른쪽에 경북 영양군의 Ghost Index 100, 하루 평균 방문 6,432명, 방문 적은 순 230곳 중 1위, 사진 있는 관광지 22곳, 전체·관광지·문화시설·레포츠 유형 버튼과 관광지 사진 카드가 있고, 첫 사진 왼쪽 위의 하트가 채워져 있습니다.">
       </button>
-      <figcaption><strong>지도</strong><span>시군구 코로플레스 지도, 지도 위에 떠 있는 숨은 지역 후보 목록, 지역을 고르면 방문량 요약과 관광지 사진 6장이 나옵니다. 주소 뒤에 지역 코드를 붙이면 그 지역을 연 채로 시작합니다.</span> <a href="https://hidden-travel-map.vercel.app/#47760">영양군으로 열기 →</a></figcaption>
+      <figcaption><strong>지도</strong><span>시군구 코로플레스 지도, 지도 위에 떠 있는 숨은 지역 후보 목록, 지역을 고르면 방문량 요약과 관광지 사진 6장이 나옵니다. 관광지 유형(관광지·문화시설·레포츠)으로 거르고 전체 보기로 모두 볼 수 있으며, 사진 왼쪽 위 ♡로 관심 관광지에 담습니다. 주소 뒤에 지역 코드를 붙이면 그 지역을 연 채로 시작합니다.</span> <a href="https://hidden-travel-map.vercel.app/#47760">영양군으로 열기 →</a></figcaption>
+    </figure>
+    <figure class="shot wide">
+      <button type="button" class="shot-btn" aria-label="관심 관광지 비교 화면 크게 보기">
+        <img src="images/service-compare.webp" width="1440" height="900" loading="lazy" alt="관심 관광지 비교 창. 서울 종로구 K-컬처 스크린, 제주시 가마오름, 경북 영양군 금강소나무생태경영림과 국립검마산자연휴양림 네 곳을 사진과 함께 나란히 놓고, 유형, 지역, 하루 평균 방문, 방문 적은 순, Ghost Index, 이용시간, 쉬는날, 주차, 유모차를 비교합니다. 영양군 두 곳에는 숨은 지역 후보와 가장 한산 표시가 붙어 있습니다.">
+      </button>
+      <figcaption><strong>관심 관광지 비교</strong><span>♡로 담은 관광지를 지도 위 창에서 나란히 비교합니다. 지역 방문량·순위·Ghost Index와 TourAPI 상세(이용시간·쉬는날·요금·주차·문의처·소개)를 한 표로 보고, 방문이 가장 적은 곳에 ‘가장 한산’을 표시합니다. 관심 목록은 로그인 없이 이 브라우저에만 저장됩니다.</span></figcaption>
     </figure>
     <figure class="shot">
       <button type="button" class="shot-btn" aria-label="데이터 분석 화면 크게 보기">
@@ -613,26 +627,26 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     </figure>
     <figure class="shot">
       <button type="button" class="shot-btn" aria-label="Swagger API 문서 화면 크게 보기">
-        <img src="images/service-swagger.webp" width="1280" height="880" loading="lazy" alt="Swagger UI 화면. 숨은여행지도 API 아래 /health, /regions, /regions/{code}, /regions/{code}/attractions, /hidden, /stats/overview, /stats/sido 일곱 개 GET 엔드포인트가 있습니다.">
+        <img src="images/service-swagger.webp" width="1280" height="880" loading="lazy" alt="Swagger UI 화면. 숨은여행지도 API 아래 default, regions, attractions, stats 묶음으로 /health, /regions, /regions/{code}, /regions/{code}/attractions, /hidden, /attractions/{content_id}, /stats/overview, /stats/sido 여덟 개 GET 엔드포인트가 있습니다.">
       </button>
-      <figcaption><strong>API 문서</strong><span>FastAPI가 만든 Swagger UI. 엔드포인트 7개의 입력값과 응답 형식을 보고 바로 호출해 볼 수 있습니다.</span> <a href="https://hidden-travel-map-api.onrender.com/docs">열기 →</a></figcaption>
+      <figcaption><strong>API 문서</strong><span>FastAPI가 만든 Swagger UI. 엔드포인트 8개의 입력값과 응답 형식을 보고 바로 호출해 볼 수 있습니다.</span> <a href="https://hidden-travel-map-api.onrender.com/docs">열기 →</a></figcaption>
     </figure>
   </div>
-  <p class="shots-note">화면 속 관광지 사진 출처: 한국관광공사 (공공누리). 캡처일 2026년 10월 4일.</p>
+  <p class="shots-note">화면 속 관광지 사진 출처: 한국관광공사 (공공누리). 캡처일 2026년 10월 11일.</p>
 
   <div class="table-scroll">
     <table class="tbl">
       <thead><tr><th scope="col">페이지</th><th scope="col">주요 기능</th><th scope="col">부르는 API</th></tr></thead>
       <tbody>
         <tr><td class="nw"><b>지도</b><small>index.html</small></td>
-          <td><ul><li>방문량 5단계 색칠과 숨은 지역 후보 강조</li><li>숨은 지역 후보 목록 (지도 위에 떠 있는 패널, 접고 펼치기)</li><li>지역 찾기, 지역 상세 (Ghost Index, 하루 평균 방문, 순위, 사진 6장)</li><li>주소 뒤 <code>#지역코드</code>로 바로 열기</li></ul></td>
-          <td class="nw"><code>/regions</code><br><code>/hidden</code><br><code>/regions/{code}/attractions</code><br><code>/stats/overview</code></td></tr>
+          <td><ul><li>방문량 5단계 색칠과 숨은 지역 후보 강조</li><li>숨은 지역 후보 목록 (지도 위에 떠 있는 패널, 접고 펼치기)</li><li>지역 찾기, 지역 상세 (Ghost Index, 하루 평균 방문, 순위, 사진 6장)</li><li>관광지 유형 필터(관광지·문화시설·레포츠)와 전체 보기</li><li>사진 왼쪽 위 ♡로 관심 관광지 저장 (브라우저에만), 패널의 관심 관광지 탭</li><li>관심 관광지 비교 창: 지역 방문량·순위와 이용시간·쉬는날·요금·주차 등을 나란히</li><li>주소 뒤 <code>#지역코드</code>로 바로 열기</li></ul></td>
+          <td class="nw"><code>/regions</code><br><code>/hidden</code><br><code>/regions/{code}/attractions</code><br><code>/attractions/{content_id}</code><br><code>/stats/overview</code></td></tr>
         <tr><td class="nw"><b>데이터 분석</b><small>analysis.html</small></td>
           <td><ul><li>수집 현황 요약과 데이터 출처</li><li>차트 5개 (관광객 구성, 방문량 분포, 시도별 비교, 사진 수와 방문량, Ghost Index 계산 과정)</li><li>차트마다 표 보기, 다크 모드, 휴대폰 화면 지원</li></ul></td>
           <td class="nw"><code>/stats/overview</code><br><code>/stats/sido</code><br><code>/regions</code></td></tr>
         <tr><td class="nw"><b>API 문서</b><small>/docs</small></td>
           <td>Pydantic 응답 모델로 입력값과 응답 형식을 정의해 Swagger UI에 자동으로 나타냅니다.</td>
-          <td class="nw">7개 전부</td></tr>
+          <td class="nw">8개 전부</td></tr>
       </tbody>
     </table>
   </div>
@@ -679,7 +693,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
   <div class="section wrap">
     <p class="kicker">서비스 아키텍처</p>
     <h2>수집과 조회를 나눈 구조</h2>
-    <p class="section-lead">외부 API는 수집기만 부릅니다. 화면은 우리 API만 부르고, 우리 API는 DB만 읽습니다. 그래서 외부 API가 느리거나 막혀도 서비스는 그대로 동작하고, 인증키는 화면에 드러나지 않습니다.</p>
+    <p class="section-lead">외부 API는 수집기가 부르고, 화면은 우리 API만 부르며, 우리 API는 DB를 읽습니다. 예외는 관광지 상세 하나입니다. 관심 관광지를 비교할 때 처음 보는 관광지만 FastAPI가 TourAPI 상세를 받아 DB에 저장하고, 그다음부터는 DB에서 줍니다. 그래서 외부 API가 느리거나 막혀도 지도와 기본 정보는 그대로 동작하고, 인증키는 화면에 드러나지 않습니다.</p>
 
     <ol class="arch">
       <li class="ext">
@@ -694,17 +708,17 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       </li>
       <li>
         <strong>DB</strong><span class="tech">PostgreSQL · Supabase (서울)</span>
-        <ul><li>테이블 4개</li><li>행 수준 보안(RLS) 켜고 공개 키 권한 회수</li></ul>
+        <ul><li>테이블 5개 (관광지 상세 캐시 포함)</li><li>행 수준 보안(RLS) 켜고 공개 키 권한 회수</li></ul>
         <span class="via">조회</span>
       </li>
       <li>
         <strong>우리 API</strong><span class="tech">FastAPI · Render (싱가포르)</span>
-        <ul><li>읽기 전용 GET 7개</li><li>Pydantic 응답 모델 → Swagger 문서</li></ul>
+        <ul><li>GET 8개</li><li>Pydantic 응답 모델 → Swagger 문서</li><li>관광지 상세는 처음 볼 때 TourAPI를 불러 DB에 저장</li></ul>
         <span class="via">JSON</span>
       </li>
       <li>
         <strong>화면</strong><span class="tech">HTML · JavaScript · Leaflet · Vercel</span>
-        <ul><li>지도, 데이터 분석</li><li>경계는 정적 파일 sigungu.geojson (0.9MB)</li></ul>
+        <ul><li>지도 (관심 관광지 비교 포함), 데이터 분석</li><li>경계는 정적 파일 sigungu.geojson (0.9MB)</li></ul>
       </li>
     </ol>
     <p class="flow-key">점선은 외부 기관이 제공하는 부분, 실선은 팀이 만든 부분입니다. SGIS 경계는 매일 바뀌지 않아 DB를 거치지 않고 정적 파일로 화면에 바로 넣습니다.</p>
@@ -729,6 +743,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
           <li>화면이 Render의 <code>GET /regions</code>를 부르고, FastAPI가 Supabase에 SQL을 보내 230곳 요약을 JSON으로 돌려줍니다.</li>
           <li>GeoJSON의 지역 코드와 JSON의 지역 코드를 이어 지도를 칠합니다.</li>
           <li>지역을 누르면 <code>/regions/{code}/attractions</code>로 사진을 받아 옵니다.</li>
+          <li>관심 관광지를 비교하면 <code>/attractions/{content_id}</code>로 상세를 받습니다. 처음 보는 관광지는 FastAPI가 TourAPI 상세를 받아 <code>attraction_details</code>에 저장한 뒤 돌려줍니다.</li>
         </ol>
       </section>
       <section>
@@ -737,7 +752,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
         <ol>
           <li>main에 push하면 Render(API)와 Vercel(화면)이 자동으로 다시 배포합니다.</li>
           <li>인증키와 DB 접속 주소는 저장소에 없습니다. 로컬 <code>.env</code>와 Render 환경변수에만 둡니다.</li>
-          <li>수집기 오류 메시지에 인증키가 든 주소가 찍히지 않게 했습니다.</li>
+          <li>수집기와 API 오류 메시지에 인증키가 든 주소가 찍히지 않게 했습니다.</li>
         </ol>
       </section>
     </div>
@@ -763,8 +778,8 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <h3>한국관광공사_국문 관광정보 서비스_GW (TourAPI)</h3>
       <p class="org">한국관광공사 · KorService2</p>
       <dl>
-        <div><dt>수집 항목</dt><dd>지역기반 관광정보 (areaBasedList2): 콘텐츠 ID, 이름, 유형, 주소, 좌표, 대표 사진, 사진 저작권 유형</dd></div>
-        <div><dt>수집량</dt><dd>관광지·문화시설·레포츠 중 대표 사진이 있는 17,658곳</dd></div>
+        <div><dt>수집 항목</dt><dd>지역기반 관광정보 (areaBasedList2): 콘텐츠 ID, 이름, 유형, 주소, 좌표, 대표 사진, 사진 저작권 유형<br>관광지 상세 (detailCommon2·detailIntro2): 소개, 홈페이지, 이용시간, 쉬는날, 이용요금, 주차, 문의처</dd></div>
+        <div><dt>수집량</dt><dd>관광지·문화시설·레포츠 중 대표 사진이 있는 17,658곳. 상세는 관심 관광지 비교에서 처음 본 관광지만 저장</dd></div>
         <div><dt>출처</dt><dd><a href="https://www.data.go.kr/data/15101578/openapi.do">data.go.kr/data/15101578</a></dd></div>
       </dl>
     </article>
@@ -944,7 +959,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
 <section class="band" id="docs">
   <div class="section wrap">
     <p class="kicker" id="api">API 설명 문서</p>
-    <h2>우리 API 엔드포인트 7개</h2>
+    <h2>우리 API 엔드포인트 8개</h2>
     <p class="section-lead">모두 읽기 전용 GET이고 JSON으로 응답합니다. 같은 내용을 <a href="https://hidden-travel-map-api.onrender.com/docs" style="color:var(--forest);font-weight:600">Swagger UI</a>에서 직접 호출해 볼 수 있습니다.</p>
     <p class="base"><span><b>기본 주소</b> https://hidden-travel-map-api.onrender.com</span><span><b>인증</b> 없음 (공개 읽기 전용)</span><span><b>CORS</b> 모든 출처의 GET 허용</span></p>
     <div class="table-scroll">
@@ -955,6 +970,7 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
           <tr><td class="nw"><code>GET /regions</code></td><td>전국 시 단위 230곳 방문량 요약. 지도 색칠에 씁니다</td><td>없음</td><td><code>RegionSummary[]</code> 230개</td></tr>
           <tr><td class="nw"><code>GET /regions/{code}</code></td><td>선택 지역 하나의 방문량 요약</td><td><b>code</b> (경로) 관광빅데이터 시군구 코드. 예 47760</td><td><code>RegionSummary</code><small>없는 코드나 일반구 코드는 404</small></td></tr>
           <tr><td class="nw"><code>GET /regions/{code}/attractions</code></td><td>선택 지역의 사진 있는 관광지</td><td><b>code</b> (경로)<br><b>limit</b> (쿼리) 1~500, 기본 6<br><b>category</b> (쿼리) 관광지·문화시설·레포츠 중 하나, 생략하면 전체</td><td><code>Attraction[]</code><small>관광지 유형 먼저, 이름순. 지원하지 않는 유형은 422</small></td></tr>
+          <tr><td class="nw"><code>GET /attractions/{content_id}</code></td><td>관광지 하나의 상세. 관심 관광지 비교에 씁니다</td><td><b>content_id</b> (경로) TourAPI 콘텐츠 ID. 예 126745</td><td><code>AttractionDetail</code><small>처음 볼 때 TourAPI 상세를 받아 DB에 저장하고 다음부터는 DB에서 줍니다. 없는 관광지는 404</small></td></tr>
           <tr><td class="nw"><code>GET /hidden</code></td><td>숨은 지역 후보. Ghost Index 높은 순</td><td><b>max_percentile</b> 0~100, 기본 30<br><b>min_attractions</b> 기본 3<br><b>limit</b> 1~230, 기본 20</td><td><code>RegionSummary[]</code></td></tr>
           <tr><td class="nw"><code>GET /stats/overview</code></td><td>분석 페이지용 전국 요약</td><td>없음</td><td><code>StatsOverview</code><small>수집 현황, 관광객 구성, 방문량 분포, 후보 수, 상관계수</small></td></tr>
           <tr><td class="nw"><code>GET /stats/sido</code></td><td>시도별 방문량·관광객 구성·후보 수</td><td>없음</td><td><code>SidoStats[]</code> 시도 16개</td></tr>
@@ -1016,11 +1032,54 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
   }
 ]</pre>
       </div>
+      <div class="schema">
+        <h4>AttractionDetail</h4>
+        <dl>
+          <div><dt>Attraction 항목 전부</dt><dd>content_id, title, category, address, lat, lon, image_url, image_license</dd></div>
+          <div><dt>region</dt><dd>관광지가 속한 시 단위 지역의 RegionSummary</dd></div>
+          <div><dt>usetime, restdate</dt><dd>이용시간, 쉬는날</dd></div>
+          <div><dt>usefee, parking</dt><dd>이용요금(문화시설·레포츠), 주차</dd></div>
+          <div><dt>tel, homepage</dt><dd>문의처, 홈페이지 주소</dd></div>
+          <div><dt>chkpet, chkbabycarriage</dt><dd>반려동물 동반, 유모차 대여</dd></div>
+          <div><dt>overview</dt><dd>소개</dd></div>
+          <div><dt>detail_fetched_at</dt><dd>TourAPI 상세를 받은 시각. null 이면 상세 조회 실패</dd></div>
+        </dl>
+        <p class="fine">TourAPI에 없는 항목은 null입니다. detailIntro2는 유형마다 필드 이름이 달라(usetime, usetimeculture, usetimeleports) 서버에서 하나로 맞춥니다.</p>
+      </div>
+      <div class="schema">
+        <h4>응답 예시</h4>
+        <pre class="json" aria-label="GET /attractions/126745 응답 예시">GET /attractions/126745
+{
+  "content_id": "126745",
+  "title": "국립검마산자연휴양림",
+  "category": "관광지",
+  "address": "경상북도 영양군 수비면 한티로 1050",
+  ...
+  "region": {
+    "code": "47760",
+    "signgu_nm": "영양군",
+    "avg_daily_visitors": 6432.4,
+    "ghost_index": 100.0,
+    "is_candidate": true,
+    ...
+  },
+  "overview": "검마산자연휴양림은 소나무 숲이 아름다워 …",
+  "homepage": "https://www.foresttrip.go.kr",
+  "tel": "054-682-9009",
+  "usetime": "[일일개장] 09:00~18:00 …",
+  "restdate": "매주 화요일",
+  "usefee": null,
+  "parking": "가능",
+  "chkpet": null,
+  "chkbabycarriage": null,
+  "detail_fetched_at": "2026-10-11T13:59:50Z"
+}</pre>
+      </div>
     </div>
 
     <p class="kicker" id="db" style="margin-top:96px">DB 테이블 문서</p>
-    <h2>테이블 4개와 관계</h2>
-    <p class="section-lead">Supabase PostgreSQL에 있습니다. 모든 테이블이 <code>region_master</code>의 <code>region_id</code>를 외래키로 가리킵니다. 정의와 주석은 저장소의 <a href="https://github.com/KuJae/hidden-travel-map/blob/main/db/schema.sql" style="color:var(--forest);font-weight:600">db/schema.sql</a>에 있습니다.</p>
+    <h2>테이블 5개와 관계</h2>
+    <p class="section-lead">Supabase PostgreSQL에 있습니다. 방문·관광지 테이블은 <code>region_master</code>의 <code>region_id</code>를, 관광지 상세는 <code>attractions</code>의 <code>content_id</code>를 외래키로 가리킵니다. 정의와 주석은 저장소의 <a href="https://github.com/KuJae/hidden-travel-map/blob/main/db/schema.sql" style="color:var(--forest);font-weight:600">db/schema.sql</a>에 있습니다.</p>
 
     <div class="erd">
       <div class="tcard erd-hub">
@@ -1077,8 +1136,24 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
           </ul>
         </div>
       </div>
+      <div class="erd-sub">
+        <div class="tcard r">
+          <span class="rel">attractions 1 : 0..1</span>
+          <h4>attraction_details <small>관광지 상세 · 비교할 때 채움</small></h4>
+          <p>TourAPI 상세를 관광지마다 처음 비교할 때 받아 저장합니다. 17,658곳을 미리 받으면 하루 호출 한도(1,000건)를 넘기 때문입니다.</p>
+          <ul class="cols">
+            <li><b>content_id<span class="k pk">PK</span><span class="k fk">FK</span></b><i>TEXT</i><small>attractions.content_id</small></li>
+            <li><b>usetime, restdate</b><i>TEXT</i><small>이용시간, 쉬는날</small></li>
+            <li><b>usefee, parking</b><i>TEXT</i><small>이용요금, 주차</small></li>
+            <li><b>tel, homepage</b><i>TEXT</i><small>문의처, 홈페이지</small></li>
+            <li><b>chkpet, chkbabycarriage</b><i>TEXT</i><small>반려동물, 유모차</small></li>
+            <li><b>overview</b><i>TEXT</i><small>소개</small></li>
+            <li><b>fetched_at</b><i>TIMESTAMPTZ</i><small>TourAPI에서 받은 시각</small></li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <p class="fine" style="margin-top:28px">보안: 네 테이블 모두 행 수준 보안(RLS)을 켜고 Supabase 공개 키(anon)의 권한을 회수했습니다. FastAPI와 수집기는 서버 쪽 계정으로만 접속합니다.</p>
+    <p class="fine" style="margin-top:28px">보안: 다섯 테이블 모두 행 수준 보안(RLS)을 켜고 Supabase 공개 키(anon)의 권한을 회수했습니다. FastAPI와 수집기는 서버 쪽 계정으로만 접속합니다.</p>
   </div>
 </section>
 
@@ -1104,6 +1179,12 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
     <li><h3>오류 메시지에 인증키가 찍혔습니다</h3>
       <p><b>원인</b><span>공공데이터포털 연결이 가끔 30초 넘게 끊기는데, 이때 오류에 인증키가 든 주소가 그대로 나왔습니다.</span></p>
       <p><b>해결</b><span>3번까지 재시도하고, 오류 메시지에서 주소를 뺐습니다.</span></p></li>
+    <li><h3>관광지 상세는 미리 받을 수 없었습니다</h3>
+      <p><b>원인</b><span>비교에 쓸 이용시간·쉬는날 같은 상세는 관광지마다 따로 불러야 해서, 17,658곳을 미리 받으면 하루 호출 한도(1,000건)를 크게 넘습니다. 필드 이름도 유형마다 달랐습니다(usetime, usetimeculture, usetimeleports).</span></p>
+      <p><b>해결</b><span>관심 관광지를 비교할 때 처음 보는 관광지만 받아 <code>attraction_details</code>에 저장하고, 필드 이름은 서버에서 하나로 맞췄습니다.</span></p></li>
+    <li><h3>운영 서버에서만 인증키가 거절됐습니다</h3>
+      <p><b>원인</b><span>로컬에서는 되던 상세 조회가 Render에서는 ‘등록되지 않은 서비스키’로 실패했습니다. 환경변수에 들어간 값이 로컬 키와 달랐는데, 키를 화면에 띄울 수 없어 눈으로 비교하기 어려웠습니다.</span></p>
+      <p><b>해결</b><span>실패 로그에 키 대신 길이와 지문(SHA-256 앞 8자리)만 남겨 로컬 키와 비교해 찾고 다시 넣었습니다. 붙여 넣을 때 섞이기 쉬운 따옴표·공백은 서버가 떼고 씁니다.</span></p></li>
   </ul>
 </section>
 
@@ -1149,11 +1230,11 @@ pre.json{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);borde
       <li><strong>사용 데이터 및 출처:</strong> 관광빅데이터·TourAPI·SGIS의 제공 기관, 출처 URL, 수집 항목과 활용 방식을 정리했습니다.</li>
       <li><strong>데이터 활용 기획 시나리오:</strong> 여행자의 숨은 여행지 탐색 문제와 지자체의 관광 활성화 수요를 연결한 서비스 활용 시나리오를 제시합니다.</li>
       <li><strong>비즈니스 모델:</strong> 지자체 공동 캠페인·방문 리포트·콘텐츠 협업을 통한 수익 창출과 지속 운영 방안을 제시합니다.</li>
-      <li><strong>주요 페이지 및 기능:</strong> 전국 방문량 지도, 지역별 상세 정보, 관광지 사진, 데이터 분석 페이지와 API 문서를 구현했습니다.</li>
+      <li><strong>주요 페이지 및 기능:</strong> 전국 방문량 지도, 지역별 상세 정보, 관광지 사진, 관심 관광지 저장·비교, 데이터 분석 페이지와 API 문서를 구현했습니다.</li>
       <li><strong>데이터 분석·정리 결과:</strong> 방문량 분포·지역별 비교·관광지 수와 방문량의 관계 등을 분석하고 주요 결과를 제시합니다.</li>
     </ul>
   </div>
-  <p class="scope">이번에는 AI 추천, 날씨, 맛집, 숙박, 여행 코스, 개인화를 넣지 않았습니다. 
+  <p class="scope">이번에는 AI 추천, 날씨, 맛집, 숙박, 여행 코스, 로그인·맞춤 추천 같은 개인화를 넣지 않았습니다 (관심 관광지는 로그인 없이 브라우저에만 저장합니다).
     키워드 검색(OpenSearch)과 매일 자동 수집은 향후 단계로 남겼습니다.</p>
 </section>
 </main>
